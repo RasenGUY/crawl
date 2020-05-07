@@ -36,17 +36,26 @@ grammer_tags_scheme = {
     'sub_title' : 'h5' 
 }
 # notes
-    # question number is extracted from question content
+    # three type schemes
+        # 1. gap with options
+            # - everything is the same but the options of the questions are in a select tab in the "question-content" div  select tag is called watupro_gap
+            # store in list without numbers, numbers can be created when print
+        # 2. gap with bullets
+            # question are in question-choices, label
+        # 3. gap with single answers
+            # options are in a div class=textBox above the excercise
+            # there is only one class=question-content 
+
 level_test_tags_scheme = {
     'title' : 'header h1:first-child',
     'sub_title' : '#exercises h5:first-child',
     'content': {
         'questions' : '.quiz-form .watu-question .question-content p',
-        'options' : {
-            'numbers' : ['.question-choices', 'i'],
-            'body' : ['.question-choices', 'label']
-        } 
+        'options' : ['.question-choices', '.watupro-question-choice'] 
     }
+    # 'answers': {
+    #     'content': ''
+    # }
 }
 
 
