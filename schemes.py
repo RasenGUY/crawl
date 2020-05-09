@@ -33,10 +33,10 @@ post = link for sending post request
 # selectors test structures
 test_structs = [
     [
-        ('.question-content .watupro-gap option', 'g-w-o'), # g-w-s 
+        ('.question-content .watupro-gap option', 'g-w-o'), # g-w-o
         {
-            'questions': '',
-            'options': '' 
+            'questions': '.quiz-form .watu-question .question-content p',
+            'options': ['select.watupro-gap', 'option']  
         }
     ], 
     [
@@ -47,9 +47,9 @@ test_structs = [
             }
     ],
     [
-        ('.watu-question input.watupro-gap', 'g-w-s'), # g-w-o 
+        ('.watu-question input.watupro-gap', 'g-w-s'), # g-w-s
         {   
-            'questions': '',
+            'questions': '.quiz-form .watu-question .question-content p',
             'options': ''
         }
     ]
@@ -60,10 +60,10 @@ test_structs = [
 
 # ---------------- Test Pages ----------
 # level-test
-level_test_scheme = {
-    'title' : 'header h1:first-child',
-    'sub_title' : '#exercises h5:first-child',
-    'content': test_structs[1][-1]
+test_scheme = {
+    'title' : 'header h1',
+    'sub_title' : '#exercises h5',
+    'content': test_structs[0][-1]
 }
 
 grammer_scheme = {
