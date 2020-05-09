@@ -29,12 +29,48 @@ post = link for sending post request
     answers['answers'] = div: class="watupro-choices-columns"
     answers['answers']['answer']['correct'] = div: class="show-questions-choices" -> ul -> li: class="correct-answer" -> span: class="answer"
 '''
-# ---------------- Test Pages -----------------------
 
-grammer_tags_scheme = {
+# selectors test structures
+test_structs = [
+    [
+        ('.question-content .watupro-gap option', 'g-w-o'), # g-w-s 
+        {
+            'questions': '',
+            'options': '' 
+        }
+    ], 
+    [
+        ('.watu-question .question-choices', 'multiple-c'), # multiple-c
+        { 
+            'questions': '.quiz-form .watu-question .question-content p', 
+            'options': ['.question-choices', '.watupro-question-choice']
+            }
+    ],
+    [
+        ('.watu-question input.watupro-gap', 'g-w-s'), # g-w-o 
+        {   
+            'questions': '',
+            'options': ''
+        }
+    ]
+]
+
+# content structures
+
+
+# ---------------- Test Pages ----------
+# level-test
+level_test_scheme = {
+    'title' : 'header h1:first-child',
+    'sub_title' : '#exercises h5:first-child',
+    'content': test_structs[1][-1]
+}
+
+grammer_scheme = {
     'title' : 'h1',
     'sub_title' : 'h5' 
 }
+
 # notes
     # three type schemes
         # 1. gap with options
@@ -46,18 +82,16 @@ grammer_tags_scheme = {
             # options are in a div class=textBox above the excercise
             # there is only one class=question-content 
 
-level_test_tags_scheme = {
-    'title' : 'header h1:first-child',
-    'sub_title' : '#exercises h5:first-child',
-    'content': {
-        'questions' : '.quiz-form .watu-question .question-content p',
-        'options' : ['.question-choices', '.watupro-question-choice'] 
-    }
-    # 'answers': {
-    #     'content': ''
-    # }
-}
 
+# todo 
+# write function that determines the test_format
+    # return gap-w-o
+    # return gap-w-b
+    # return gap-w-s
+
+# normalizing things
+    # grammer and writing texts both have excercises
+    # reading and listening are usually consist of just one excercise
 
 
 

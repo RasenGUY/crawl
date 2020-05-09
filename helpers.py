@@ -18,4 +18,4 @@ def find_pattern_inst(pattern, list):
     ''' 
 
     # find instances of pattern in given list and return it
-    return len([list_item for list_item in list if pattern.match(list_item)]) 
+    return len([list_item for list_item in list if pattern.match(list_item)])
