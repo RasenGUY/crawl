@@ -8,10 +8,9 @@ def parse_tests_content(page, scheme, test_structs):
     '''
     
     # locals 
-    content = dict()
+    test_content = dict()
     struct = find_page_struct(page, test_structs)
     pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
-
 
     # find test structure and assign scheme to parser according to structure 
     if struct == 'g-w-o':
@@ -20,24 +19,27 @@ def parse_tests_content(page, scheme, test_structs):
         scheme['content'] = test_structs[1][-1]
     elif struct == 'g-w-s':
         scheme['content'] = test_structs[-1][-1]
+
+    print(struct)
     
     # parse data according to keys in scheme 
     for s_key in scheme.keys():
 
-        if s_key == 'title' or s_key == 'sub_title':
-            
-            content[s_key] = page.select(scheme[s_key])[0].get_text().strip()
+        if s_key == 'title' or s_key == 'sub_title' or s_key == 'ex_title':
+            test_content[s_key] = page.select(scheme[s_key])[0].get_text().strip()
         
+        # parse test content
         elif s_key == 'content': 
             
-            content[s_key] = dict()
+
+            test_content[s_key] = {}
             for c_key in scheme[s_key].keys(): 
 
                 # ------------------------- parse multiple choice questions tests-------------------------
 
                 # parse questios
                 if c_key == 'questions' and struct == 'multiple-c':
-                    content[s_key][c_key] = [
+                    test_content[s_key][c_key] = [
                         [   # get question number
                             ''.join(pattern.findall(tag.get_text().encode('ascii', 'ignore').decode().strip())[0]+"."),
                             # get question content
@@ -48,7 +50,7 @@ def parse_tests_content(page, scheme, test_structs):
 
                 # parse possible answers 
                 elif c_key == 'options' and struct == 'multiple-c':
-                    content[s_key][c_key] = [
+                    test_content[s_key][c_key] = [
                                     [
                                         # get option content
                                         ''.join(option.get_text().encode('ascii', 'ignore').decode().split(pattern.findall(option.get_text().encode('ascii', 'ignore').decode().strip())[0]+''))
@@ -65,7 +67,7 @@ def parse_tests_content(page, scheme, test_structs):
                 # parse questions  
                 elif c_key == 'questions' and struct == 'g-w-o':
 
-                    content[s_key][c_key] = [
+                    test_content[s_key][c_key] = [
                                     [   # get question number
                                         ''.join(pattern.findall(questions.get_text().encode('ascii', 'ignore').decode().strip())[0]+"."),
                                         # join all options in the text into one string and remove them from the question and remove number
@@ -79,7 +81,7 @@ def parse_tests_content(page, scheme, test_structs):
                 # parse possible answers 
                 elif c_key == 'options' and struct == 'g-w-o':
                     
-                    content[s_key][c_key] = [
+                    test_content[s_key][c_key] = [
                                     [   # parse all option in column retrieve text 
                                         option.get_text() for option in column.select(scheme[s_key][c_key][-1]) if option.get_text() != ''
                                     ]
@@ -92,7 +94,7 @@ def parse_tests_content(page, scheme, test_structs):
                 elif c_key == 'questions' and struct == 'g-w-s':
                     
                     
-                    content[s_key][c_key] = []
+                    test_content[s_key][c_key] = []
                         
                     for paragraph in page.select(scheme[s_key][c_key][0]):
                         
@@ -100,13 +102,13 @@ def parse_tests_content(page, scheme, test_structs):
                             
                             numbox.string.replace_with('___'+numbox.get_text()+'___')
                     
-                        content[s_key][c_key].append(paragraph.get_text().encode('ascii', 'ignore').decode())        
+                        test_content[s_key][c_key].append(paragraph.get_text().encode('ascii', 'ignore').decode())        
                     
                 # no options to parse
                 elif c_key == 'options' and struct == 'g-w-s':
                     pass
-    
-    return content
+
+    return test_content
 
 def parse_tests_answers(page, scheme, test_structs):
     '''

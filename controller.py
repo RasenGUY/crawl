@@ -21,13 +21,14 @@ class Webpage:
     """
 
     # intialize basic information of website
-    def __init__(self, url, headers, ils_if, target_params):
+    def __init__(self, url, headers, title, ils_if, target_params):
         """
         initialize common base information
         """
         self.abs_url = parse.urlparse(url).scheme + "://" + parse.urlparse(url).netloc
         self.rel_url = parse.urlparse(url).path
         self.headers = headers
+        self.title = title
         self.ils_if = ils_if
         self.target_params = target_params
 
@@ -39,15 +40,14 @@ class Tests(Webpage):
     -------------------------------------------------------------------------------------------------------
     """
 
-    def __init__(self, url, headers, ils_if, target_params, post, d_ext_scheme):
+    def __init__(self, url, headers, title, ils_if, target_params, post, tag_scheme):
 
         # initialize base class WebPage
-        Webpage.__init__(self, url, headers, ils_if, target_params)
+        Webpage.__init__(self, url, headers, title, ils_if, target_params)
 
         self.post_link = post # link for making post_requests, this is unique for tests websites
-        self.level = None  # figure out a tag or function that will be required
-        self.feedback = False # boolean for feedbacks
-        self.test_page = d_ext_scheme
+        self.tag_scheme = tag_scheme # tag scheme for retrieving content from a page 
+
 
 
 class Crawler:
@@ -151,7 +151,7 @@ class Crawler:
                 page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True, parser='lxml')
                 
                 page_type = parse.urlparse(req.url).path.strip('/').split('/')[0]
-                
+
                 
                 # if test-category is level-test 
                 if page_type == 'level-test':
@@ -194,6 +194,7 @@ if __name__ == "__main__":
         [
             "https://test-english.com/",
             [{"User-Agent": "Mozilla/75.0"}, [{"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}]] ,
+            'h1',
             ["a", {"href" : re.compile(r'(\?p=[0-9]*)|((https://)|(https://www\.))test-english\.com')}],
             ["form", {"class" : "quiz-form"}],
             "https://test-english.com/staging01/wp-admin/admin-ajax.php",
@@ -203,7 +204,7 @@ if __name__ == "__main__":
     ]
 
     # create website and crawler instance
-    test = Tests(websites[0][0], websites[0][1], websites[0][2], websites[0][3], websites[0][4], websites[0][5])
+    test = Tests(websites[0][0], websites[0][1], websites[0][2],websites[0][3], websites[0][4], websites[0][5], websites[0][6])
     test_crawler = Crawler(test)
     
     # feed links to crawler  

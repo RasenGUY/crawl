@@ -1,33 +1,12 @@
 # all of the data schemes for the different classes
 # ---------------------------------------------------
 
+# there are more types
+    # https://test-english.com/listening/b1-b2/actors-talk-acting/
+
+
 '''
-post = link for sending post request
-    
-    ---- information for tests ----
-    test['id'] = "div -> form: class="quiz-form" id="quiz-<id>" 
-    test['title'] = "h1: class="mb-4"
-    test['subtitle'] = "h5"
-    test['reading_text'] = div: id="excercises" constituted of all of the h4, h6 and all of the p tags
-    
-    --- information for questions --- 
-    test['questions'] = class="watu-question" -> bs.find_all retrieves a list bs question objects
-
-    test['questions']['question']['text_info'] = div: class="question-content" p (retrieve through regex)
-        - if obj.is_gap = True
-            - store text of text_info bs object
-        - else
-            - store as (use regex):
-                - q_number
-                - q_text
-
-    test['questions']['question']['options'] = div: class="question-choices" -> used to return a list of options    
-    test['questions']['question']['options']['option']['number'] = div: class="watupro-question-choice" <i> a., b. c. etc <i/>
-    test['questions']['question']['options']['option']['text'] = class="watupro-question-choice" label: class=" answer" -> span: text resides inside this span tag
-
-    --- information for answers ---
-    answers['answers'] = div: class="watupro-choices-columns"
-    answers['answers']['answer']['correct'] = div: class="show-questions-choices" -> ul -> li: class="correct-answer" -> span: class="answer"
+This module contains all of possible tag strcuture schemes for the parsing the different tests of tests target website
 '''
 
 # selectors test structures
@@ -60,16 +39,24 @@ test_structs = [
 
 # ---------------- Test Pages ----------
 # level-test
-test_scheme = {
-    'title' : 'header h1',
+level_test_scheme = {
+    'title' : 'header h1', #test-title
     'sub_title' : '#exercises h5',
-    'content': test_structs[-1][-1]
+    'content': dict(),
+    'answers': dict()
 }
 
+# grammer-tests
 grammer_scheme = {
-    'title' : 'h1',
-    'sub_title' : 'h5' 
+    'title' : 'header h1', #test-title
+    'ex_title': '#exercises h3', # exercsise title
+    'sub_title' : 'h5', #excercise subtitle
+    'content' : dict(),
+    'answers' : dict()
 }
+# use of english test
+
+
 
 # notes
     # three type schemes

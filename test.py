@@ -2,15 +2,24 @@ from bs4 import BeautifulSoup
 import requests
 from schemes import *
 from helpers import *
+from tests_parser import *
 import re
+
+# https://test-english.com/listening/b1-b2/actors-talk-acting/
+# https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/2/
+# https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/3/
 
 headers = {"User-Agent": "Mozilla/75.0"}
 pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
-req = requests.get('https://test-english.com/grammar-points/b1-b2/questions-different-types/2/', headers=headers)
+req = requests.get('https://test-english.com/grammar-points/a1/this-that-these-those/3/', headers=headers)
 page = BeautifulSoup(req.text, 'lxml')
 
+scheme = level_test_scheme
+content = parse_tests_content(page, scheme, test_structs)
 
+print(content)
 
+# parse answers
 
 # print()
 # print(content['title'])
