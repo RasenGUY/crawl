@@ -30,11 +30,10 @@ def find_page_struct(page, struct):
     
     for structure in struct:
         
-        struct_type = None
         # determine page struct
         if len(page.select(structure[0][0])) > 0:
             
-            struct = structure[0][-1]
+            struct_type = structure[0][-1]
 
             return struct_type
     

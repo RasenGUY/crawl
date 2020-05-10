@@ -1,11 +1,15 @@
+# python libraries
 from urllib import parse
 import requests
 from bs4 import BeautifulSoup
 import os
 import re
 import sys
+
+# app libraries
 from helpers import *
 from schemes import *
+from tests_parser import *
 
 sys.setrecursionlimit(10000)
 
@@ -42,8 +46,7 @@ class Tests(Webpage):
 
         self.post_link = post # link for making post_requests, this is unique for tests websites
         self.level = None  # figure out a tag or function that will be required
-        self.is_gap = False
-        self.feedback = False
+        self.feedback = False # boolean for feedbacks
         self.test_page = d_ext_scheme
 
 
@@ -145,16 +148,19 @@ class Crawler:
             print("-"*100)
             if target != None:
                 print("Found target {}".format(target[0]))
-                page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True)
+                page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True, parser='lxml')
+                
                 page_type = parse.urlparse(req.url).path.strip('/').split('/')[0]
-                print(page_type)
-                pass
+                
                 
                 # if test-category is level-test 
                 if page_type == 'level-test':
-                    
-                    # check test structure
-                    structure = page.find
+                    pass 
+                    # create content instance for level-test
+                    # create site instance for level-test
+                        # parse page
+                    # store information from level-test content instance
+                    # create document out of content instance
                     
                 
                 # if page is title is grammer-points do something

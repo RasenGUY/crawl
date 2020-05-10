@@ -49,8 +49,8 @@ test_structs = [
     [
         ('.watu-question input.watupro-gap', 'g-w-s'), # g-w-s
         {   
-            'questions': '.quiz-form .watu-question .question-content p',
-            'options': ''
+            'questions': ['.quiz-form .watu-question .question-content p', '.numBox'],
+            'options': None
         }
     ]
 ]
@@ -63,7 +63,7 @@ test_structs = [
 test_scheme = {
     'title' : 'header h1',
     'sub_title' : '#exercises h5',
-    'content': test_structs[0][-1]
+    'content': test_structs[-1][-1]
 }
 
 grammer_scheme = {
