@@ -15,10 +15,12 @@ def parse_tests_content(page, scheme, test_structs):
     # find test structure and assign scheme to parser according to structure 
     if struct == 'g-w-o':
         scheme['content'] = test_structs[0][-1]
-    elif struct == 'multiple-c':
+    elif struct == 'multiple-c-w-b':
         scheme['content'] = test_structs[1][-1]
-    elif struct == 'g-w-s':
-        scheme['content'] = test_structs[-1][-1]
+    elif struct == 'multiple-c-w-o':
+        scheme['content'] = test_structs[2][-1]
+    elif struct == 'g-w-s-text':
+        scheme['content'] = test_structs[3][-1]
 
     print(struct)
     
@@ -26,6 +28,9 @@ def parse_tests_content(page, scheme, test_structs):
     for s_key in scheme.keys():
 
         if s_key == 'title' or s_key == 'sub_title' or s_key == 'ex_title':
+            test_content[s_key] = page.select(scheme[s_key])[0].get_text().encode('ascii', 'ignore').decode().strip()
+        
+        elif s_key == 'example_text': # store example_text with arrows
             test_content[s_key] = page.select(scheme[s_key])[0].get_text().strip()
         
         # parse test content
@@ -35,10 +40,10 @@ def parse_tests_content(page, scheme, test_structs):
             test_content[s_key] = {}
             for c_key in scheme[s_key].keys(): 
 
-                # ------------------------- parse multiple choice questions tests-------------------------
+                # ------------------------- parse multiple choice questions with bullet point answers tests-------------------------
 
-                # parse questios
-                if c_key == 'questions' and struct == 'multiple-c':
+                # parse questions
+                if c_key == 'questions' and struct == 'multiple-c-w-b':
                     test_content[s_key][c_key] = [
                         [   # get question number
                             ''.join(pattern.findall(tag.get_text().encode('ascii', 'ignore').decode().strip())[0]+"."),
@@ -49,7 +54,7 @@ def parse_tests_content(page, scheme, test_structs):
                         ]
 
                 # parse possible answers 
-                elif c_key == 'options' and struct == 'multiple-c':
+                elif c_key == 'options' and struct == 'multiple-c-w-b':
                     test_content[s_key][c_key] = [
                                     [
                                         # get option content
@@ -60,7 +65,27 @@ def parse_tests_content(page, scheme, test_structs):
 
                                 for options in page.select(scheme[s_key][c_key][0])
                                 ]
+                # ------------------------- parse multiple choice questions options answers tests-------------------------
 
+                # parse questions
+                elif c_key == 'questions' and struct == 'multiple-c-w-o':
+                    test_content[s_key][c_key] = [
+                        [   # get question number
+                            ''.join(pattern.findall(tag.get_text().encode('ascii', 'ignore').decode().strip())[0]+"."),
+                            # get question content
+                            tag.get_text().encode('ascii', 'ignore').decode().strip().strip(''.join(pattern.findall(tag.get_text().encode('ascii', 'ignore').decode().strip())))
+                        ] 
+                        for tag in page.select(scheme[s_key][c_key])
+                        ]
+
+                # parse possible answers 
+                elif c_key == 'options' and struct == 'multiple-c-w-o':
+                    test_content[s_key][c_key] = [
+                        [
+                            option.get_text() for option in o_column.select(scheme[s_key][c_key][-1])
+                        ]
+                        for o_column in page.select(scheme[s_key][c_key][0])
+                    ]
 
                 # --------------------- parse gap tests with options -----------------------
 
@@ -89,9 +114,9 @@ def parse_tests_content(page, scheme, test_structs):
                                 for column in page.select(scheme[s_key][c_key][0])
                                 ]
                 
-                # --------------------- parse gap tests with single answers -----------------------
+                # --------------------- parse gap tests with single answers (text)-----------------------
                 # parse questions  
-                elif c_key == 'questions' and struct == 'g-w-s':
+                elif c_key == 'questions' and struct == 'g-w-s-text':
                     
                     
                     test_content[s_key][c_key] = []
@@ -105,7 +130,25 @@ def parse_tests_content(page, scheme, test_structs):
                         test_content[s_key][c_key].append(paragraph.get_text().encode('ascii', 'ignore').decode())        
                     
                 # no options to parse
-                elif c_key == 'options' and struct == 'g-w-s':
+                elif c_key == 'options' and struct == 'g-w-s-text':
+                    pass
+                
+                # --------------------- parse gap tests with single answers (form) -----------------------
+                # parse questions  
+                elif c_key == 'questions' and struct == 'g-w-s-form':
+                    
+                    
+                    test_content[s_key][c_key] = [
+                        [   # get question number
+                            ''.join(pattern.findall(tag.get_text().encode('ascii', 'ignore').decode().strip())[0]+"."),
+                            # get question content
+                            tag.get_text().encode('ascii', 'ignore').decode().strip().strip(''.join(pattern.findall(tag.get_text().encode('ascii', 'ignore').decode().strip())))
+                        ] 
+                        for tag in page.select(scheme[s_key][c_key])
+                        ]      
+                    
+                # no options to parse
+                elif c_key == 'options' and struct == 'g-w-s-form':
                     pass
 
     return test_content

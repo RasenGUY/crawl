@@ -5,6 +5,7 @@
     # https://test-english.com/listening/b1-b2/actors-talk-acting/
 
 
+
 '''
 This module contains all of possible tag strcuture schemes for the parsing the different tests of tests target website
 '''
@@ -19,19 +20,34 @@ test_structs = [
         }
     ], 
     [
-        ('.watu-question .question-choices', 'multiple-c'), # multiple-c
+        ('.watu-question .question-choices .watupro-question-choice.watupro-ansnum', 'multiple-c-w-b'), # multiple-c-w-b
         { 
             'questions': '.quiz-form .watu-question .question-content p', 
             'options': ['.question-choices', '.watupro-question-choice']
             }
     ],
     [
-        ('.watu-question input.watupro-gap', 'g-w-s'), # g-w-s
+        ('.watu-question .question-choices select', 'multiple-c-w-o'), # multiple-c-w-o
+        { 
+            'questions': '.quiz-form .watu-question .question-content p', 
+            'options': ['.question-choices select', 'option']
+            }
+    ],
+    [
+        ('.watu-question input.watupro-gap', 'g-w-s-text'), # g-w-s-text
         {   
             'questions': ['.quiz-form .watu-question .question-content p', '.numBox'],
             'options': None
         }
+    ],
+    [
+        ('.watu-question .question-content p input.watupro-gap', 'g-w-s-'), # g-w-s-text
+        {   
+            'questions': '.quiz-form .watu-question .question-content p'
+            'options': None
+        }
     ]
+    
 ]
 
 # content structures
@@ -41,7 +57,7 @@ test_structs = [
 # level-test
 level_test_scheme = {
     'title' : 'header h1', #test-title
-    'sub_title' : '#exercises h5',
+    'sub_title' : '#exercises h5', #test subtitle 
     'content': dict(),
     'answers': dict()
 }
@@ -49,8 +65,9 @@ level_test_scheme = {
 # grammer-tests
 grammer_scheme = {
     'title' : 'header h1', #test-title
-    'ex_title': '#exercises h3', # exercsise title
+    'ex_title': '#exercises h3', # exercise title
     'sub_title' : 'h5', #excercise subtitle
+    'example_text' : '#exercises p:nth-child(3)', # test answers example
     'content' : dict(),
     'answers' : dict()
 }
