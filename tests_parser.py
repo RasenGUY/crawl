@@ -14,10 +14,11 @@ def parse_tests_content(page, scheme):
     test_content = dict()
     pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
 
-    # retrieve headers
-    # retrieve data from form
-
-    # retrieve data from data from text
+    # parse headers
+    
+    # parse questions and answers
+        # parse form questions and answers
+        # parse text questions and answers  
 
 def parse_tests_answers(page, scheme, test_structs):
     '''

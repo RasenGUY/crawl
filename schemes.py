@@ -12,8 +12,8 @@ This module contains all of possible tag strcuture schemes for the parsing the d
 
 # selectors for getting the question structure
 # global question selector
-g_quest_sel = '.quiz-form .watu-question .question-content'
-q_selectors = [('.question-content input.watupro-gap', 'gap_option'), ('.question-content select.watupro-gap', 'gap_options'), ('.watu-question .question-choices', 'multiple_c')]
+g_quest_sel = '.quiz-form .watu-question'
+q_selectors = [('.question-content input.watupro-gap', 'gap_option'), ('.question-content select.watupro-gap', 'gap_options'), ('.question-choices', 'multiple_c')]
 
 
 # ---------------- Test Pages ----------

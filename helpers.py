@@ -44,18 +44,21 @@ def find_q_struct(selector, page):
         - forms -> these contain more then one watu-question
         - texts -> these contain just one watu-question 
     '''
+    
     q_struct = None
     
     if len(page.select(selector)) > 1:
         
         q_struct = 'form'
+        q_tag = '.question-content p'
 
     
     elif len(page.select(selector)) == 1:
         
         q_struct = 'text'
+        q_tag = '.question-content'
 
-    return (q_struct, selector)
+    return (q_struct, q_tag)
 
 def find_a_struct(q_struct, sels, q_sel, page):
     '''
@@ -84,26 +87,23 @@ def find_a_struct(q_struct, sels, q_sel, page):
                 
                 if len(page.select(q_sel)[0].select(sel[0])) != 0:
                     
-                    a_struct = sel[-1]
-                    a_tag = sel[0]
-
                     # is the multiple choice as option 
                     if len(page.select(q_sel)[0].select(sel[0])[0].select('select')) != 0:
                         
-                        a_struct = a_struct + '_options'        
+                        a_struct = sel[-1] + '_options'
+                        a_tag = sel[0] + ' ' + 'select option'        
                     
                     # is the multiple choice as bullets
                     elif len(page.select(q_sel)[0].select(sel[0])[0].select('label')) != 0:
 
-                        a_struct = a_struct + '_bullets'
+                        a_struct = sel[-1] + '_bullets'
+                        a_tag = sel[0] + ' ' + 'label'       
                     
                     # is the multiple choice as box
                     elif len(page.select(q_sel)[0].select(sel[0])[0].select('ul')) != 0:
                 
-                        a_struct = a_struct + '_boxes'
-
-                else:
-                    continue
+                        a_struct = sel[-1] + '_boxes'
+                        a_tag = sel[0] + ' ' + 'ul li'        
         
             # is the a_struct a gap_option or a gap_options?             
             else:
@@ -111,7 +111,8 @@ def find_a_struct(q_struct, sels, q_sel, page):
                 if len(page.select(q_sel)[0].select(sel[0])) > 0:
                     
                     a_struct = sel[-1]
-                    a_tag = '.watu-question .question-content'
+                    a_tag = sel[0]
+
 
 
         # find answer structure in a text      
@@ -134,5 +135,5 @@ def find_a_struct(q_struct, sels, q_sel, page):
         return (a_struct, a_tag)
     
     else:
-        return (a_struct, 'no a tag')
+        return (a_struct, 'no answer tag')
         

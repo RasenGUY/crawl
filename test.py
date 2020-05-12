@@ -42,7 +42,7 @@ req = requests.get('https://test-english.com/grammar-points/b1-b2/review-verb-te
 page = BeautifulSoup(req.text, 'lxml')
 
 q_struct = find_q_struct(g_quest_sel, page)
-a_struct = find_a_struct(q_struct, q_selectors, q_struct[-1], page)
+a_struct = find_a_struct(q_struct[0], q_selectors, g_quest_sel, page)
 # def parse_q_and_a(q_struct, a_struct, q_sel, a_sel, page):
     # '''
     # helper function for parsing form or text data from a target tests page
@@ -50,20 +50,68 @@ a_struct = find_a_struct(q_struct, q_selectors, q_struct[-1], page)
     
 parsed_q = []
 parsed_a = []
-
+print(q_struct)
 if q_struct[0] == 'form':
     
+    # bools
+    has_mul = False
+
     # parse all of the questions of the page and remove the numbers
-    questions = page.select(q_struct[-1])
+    questions = page.select(g_quest_sel)
 
     for question in questions:
         
+        # remove number from questions
         question.select('.watupro_num')[0].string.replace_with('')
+        
+        # ----------------- parse multiple choice questions -------------
 
-        parsed_q.append(question.get_text().strip())
+        # parse multiple choice options answers
+        if a_struct[0] == 'multiple_c_options':
 
+            # parse answers
+            parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
+        
+        # parse multiple choice bullet answers
+        elif a_struct[0] == 'multiple_c_bullets':
+
+            # remove bullets
+            for answer_n in question.select('i'):
+                
+                answer_n.string.replace_with('')
+
+            # parse answers
+            parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
+        
+        # parse multiple choice boxes answers
+        elif a_struct[0] == 'multiple_c_boxes':
+            
+            parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
+        
+        # parse gap_option
+        elif a_struct[0] == 'gap_option':
+        
+            pass
+
+        # parse qupend(question.select(q_struct[-1])[0].get_text().strip())estions
+        parsed_q.ap
+        
+
+    
 print(parsed_q)
+print(parsed_a)
 
+
+        
+
+
+
+
+
+
+# answers = page.select(q_struct[-1])[0].select('.question-content input.watupro-gap')
+
+# print(answers)
 
 
 
@@ -138,9 +186,9 @@ print(parsed_q)
 
     #                 test_content[s_key][c_key] = [
     #                                 [   # get question number
-    #                                     ''.join(pattern.findall(questions.get_text().encode('ascii', 'ignore').decode().strip())[0]+"."),
-    #                                     # join all options in the text into one string and remove them from the question and remove number
-    #                                     questions.get_text().encode('ascii', 'ignore').decode().strip().replace(''.join([question.get_text() for question in questions.select(scheme['content']['options'][-1]) if question.get_text() != '']), '_'*5).strip(''.join(pattern.findall(questions.get_text().encode('ascii', 'ignore').decode().strip())))
+    #                                     questions.get_text().encode('aremove number from questions.decode().strip().replace(''.join([question.get_text() for question in questions.select(scheme['content']['options'][-1]) if question.get_text() != '']), '_'*5).strip(''.join(pattern.findall(questions.get_text().encode('ascii', 'ignore').decode().strip())))
+    #                                     ''.join(pattern.findall(questions.get_text().encode('ascii', 'ignore').decode().strip()) or gap options
+    # 'multiple_c'join all options in the text into one string and remove them from the question and remove number
 
     #                                 ]
     #                                     # parse questions from documents
@@ -168,13 +216,12 @@ print(parsed_q)
     #                 for paragraph in page.select(scheme[s_key][c_key][0]):
                         
     #                     for numbox in paragraph.select('.numBox'):
-                            
+                        # remove number from questionsy][c_key].append(paragraph.get_text().encode('ascii', 'ignore').decode())        
     #                         numbox.string.replace_with('___'+numbox.get_text()+'___')
                     
-    #                     test_content[s_key][c_key].append(paragraph.get_text().encode('ascii', 'ignore').decode())        
                     
-    #             # no options to parse
-    #             elif c_key == 'options' and struct == 'g-w-s-text':
+    #             # no options t or gap options
+    #             elif c_key == ''multiple_c' struct == 'g-w-s-text':
     #                 pass
                 
     #             # --------------------- parse gap tests with single answers (form) -----------------------
