@@ -55,7 +55,7 @@ def find_q_struct(selector, page):
         
         q_struct = 'text'
 
-    return q_struct, selector
+    return (q_struct, selector)
 
 def find_a_struct(q_struct, sels, q_sel, page):
     '''

@@ -10,7 +10,32 @@
 This module contains all of possible tag strcuture schemes for the parsing the different tests of tests target website
 '''
 
-# selectors test structures
+# selectors for getting the question structure
+# global question selector
+g_quest_sel = '.quiz-form .watu-question .question-content'
+q_selectors = [('.question-content input.watupro-gap', 'gap_option'), ('.question-content select.watupro-gap', 'gap_options'), ('.watu-question .question-choices', 'multiple_c')]
+
+
+# ---------------- Test Pages ----------
+# level-test
+level_test_scheme = {
+    'title' : 'header h1', #test-title
+    'sub_title' : '#exercises h5', #test subtitle 
+    'content': dict(),
+    'answers': dict()
+}
+
+# grammer-tests
+grammer_scheme = {
+    'title' : 'header h1', #test-title
+    'ex_title': '#exercises h3', # exercise title
+    'sub_title' : 'h5', #excercise subtitle
+    'example_text' : '#exercises p:nth-child(3)', # test answers example
+    'content' : dict(),
+    'answers' : dict()
+}
+
+# deprecated
 test_structs = [
     [
         ('.question-content .watupro-gap option', 'g-w-o'), # g-w-o
@@ -43,35 +68,14 @@ test_structs = [
     [
         ('.watu-question .question-content p input.watupro-gap', 'g-w-s-'), # g-w-s-text
         {   
-            'questions': '.quiz-form .watu-question .question-content p'
+            'questions': '.quiz-form .watu-question .question-content p',
             'options': None
         }
     ]
     
 ]
 
-# content structures
 
-
-# ---------------- Test Pages ----------
-# level-test
-level_test_scheme = {
-    'title' : 'header h1', #test-title
-    'sub_title' : '#exercises h5', #test subtitle 
-    'content': dict(),
-    'answers': dict()
-}
-
-# grammer-tests
-grammer_scheme = {
-    'title' : 'header h1', #test-title
-    'ex_title': '#exercises h3', # exercise title
-    'sub_title' : 'h5', #excercise subtitle
-    'example_text' : '#exercises p:nth-child(3)', # test answers example
-    'content' : dict(),
-    'answers' : dict()
-}
-# use of english test
 
 
 
@@ -101,3 +105,4 @@ grammer_scheme = {
 
 
 # ---------------------------------------------------
+ 
