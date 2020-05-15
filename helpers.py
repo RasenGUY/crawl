@@ -1,3 +1,6 @@
+import re
+from bs4 import BeautifulSoup
+
 def feed_crawler_links(file):
     '''
     helper function which loads already surfed llinks to the crawler returns a list of of links
@@ -19,6 +22,27 @@ def find_pattern_inst(pattern, list):
 
     # find instances of pattern in given list and return it
     return len([list_item for list_item in list if pattern.match(list_item)])
+
+def rem_soup_ins_re(targets, soup, repl_str, parser='lxml'):
+    '''
+    helper function for removing target instances in a list from a bsoup string utilizing the targets as the pattern instances
+    '''
+
+    # remove target instances from string 
+    elem = str(soup)
+    for target in targets:
+        
+        pattern = re.compile(r''+str(target))
+        match = pattern.search(elem)
+
+        if match != None:
+
+            new = elem.replace(elem[match.start():match.end()], repl_str)
+
+            elem = new 
+    
+    return BeautifulSoup(elem, parser) 
+
 
 
 def find_page_struct(page, struct):
@@ -44,18 +68,26 @@ def find_q_struct(selector, page):
         - forms -> these contain more then one watu-question
         - texts -> these contain just one watu-question 
     '''
-    
+    # test type
     q_struct = None
     
     if len(page.select(selector)) > 1:
-        
+
         q_struct = 'form'
+    
+        # tag to retreive questins or questions
         q_tag = '.question-content p'
 
-    
     elif len(page.select(selector)) == 1:
         
         q_struct = 'text'
+
+        # tag to retreive questins or questions
+        q_tag = '.question-content p'
+    
+    if len(page.find_all(string=re.compile(r'Dialogue \d+'))) > 0:
+
+        q_struct = 'dialogue'
         q_tag = '.question-content'
 
     return (q_struct, q_tag)
@@ -113,10 +145,8 @@ def find_a_struct(q_struct, sels, q_sel, page):
                     a_struct = sel[-1]
                     a_tag = sel[0]
 
-
-
         # find answer structure in a text      
-        elif q_struct == 'text':
+        elif q_struct == 'text' or q_struct == 'dialogue':
 
             # texts do not contain multipe choice answer structures
             if sel[-1] == 'multiple_c':
@@ -130,7 +160,8 @@ def find_a_struct(q_struct, sels, q_sel, page):
                 
                 else:
                     a_struct = sel[-1]
-
+                    a_tag = sel[0]
+        
     if a_tag != None:
         return (a_struct, a_tag)
     

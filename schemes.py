@@ -1,11 +1,6 @@
 # all of the data schemes for the different classes
 # ---------------------------------------------------
 
-# there are more types
-    # https://test-english.com/listening/b1-b2/actors-talk-acting/
-
-
-
 '''
 This module contains all of possible tag strcuture schemes for the parsing the different tests of tests target website
 '''

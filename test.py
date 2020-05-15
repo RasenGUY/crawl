@@ -39,7 +39,7 @@ import re
 
 headers = {"User-Agent": "Mozilla/75.0"}
 # pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
-req = requests.get('https://test-english.com/grammar-points/a2/however-although-time-connectors/', headers=headers)
+req = requests.get('https://test-english.com/grammar-points/b1-b2/review-verb-tenses-b1-b2/', headers=headers)
 page = BeautifulSoup(req.text, 'lxml')
 
 
@@ -65,15 +65,14 @@ parsed_q = []
 parsed_a = []
 print(q_struct)
 print(a_struct)
-if q_struct[0] == 'form':
+q_number = 0
+
+# parse all of the questions of the page and remove the numbers
+questions = page.select(g_quest_sel)
+
+for question in questions:
     
-    # bools
-    has_mul = False
-
-    # parse all of the questions of the page and remove the numbers
-    questions = page.select(g_quest_sel)
-
-    for question in questions:
+    if q_struct[0] == 'form':
         
         # remove number from questions
         question.select('.watupro_num')[0].clear()
@@ -82,12 +81,18 @@ if q_struct[0] == 'form':
 
         # parse multiple choice options answers
         if a_struct[0] == 'multiple_c_options':
+            
+            # parse questions
+            parsed_q.append(question.select(q_struct[-1])[0].get_text().strip())
 
             # parse answers
             parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
         
         # parse multiple choice bullet answers
         elif a_struct[0] == 'multiple_c_bullets':
+            
+            # parse questions
+            parsed_q.append(question.select(q_struct[-1])[0].get_text().strip())
 
             # remove bullets
             for answer_n in question.select('i'):
@@ -100,6 +105,10 @@ if q_struct[0] == 'form':
         # parse multiple choice boxes answers
         elif a_struct[0] == 'multiple_c_boxes':
             
+            # parse questions
+            parsed_q.append(question.select(q_struct[-1])[0].get_text().strip())
+
+            # parse answers
             parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
         
         # parse gap_option (just has questions no options to select from)
@@ -108,23 +117,101 @@ if q_struct[0] == 'form':
             # replace inputs with literal gap string
             inputs = question.select(a_struct[-1])
             
-            elem = str(question)
-            for input in inputs:    
-                pattern = re.compile(r''+str(input))
-                match = pattern.search(elem)
+            # elem = str(question)
+            # for input in inputs:    
+            #     pattern = re.compile(r''+str(input))
+            #     match = pattern.search(elem)
 
-                if match != None:
+            #     if match != None:
 
-                    new = elem.replace(elem[match.start():match.end()], '_'*3)
-                    elem = new
-
-            parsed_q.append((BeautifulSoup(elem, 'lxml').get_text().strip()))
+            #         new = elem.replace(elem[match.start():match.end()], '_'*3)
+            #         elem = new
+            new_soup = rem_soup_ins_re(inputs, question, '_'*3)
+            parsed_q.append(new_soup.get_text().strip())
 
             # if gap options store answers
             if a_struct[0] == 'gap_options':
                 
                 parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1]) if answer.get_text() != ''])
+
+    elif q_struct[0] == 'text':
+        
+        # number of questions 
+        q_number = len(question.select('.numBox'))
+
+        # retrieve all paragraphs
+        for paragraph in question.select(q_struct[-1]):
+
+            # remove numbers replace with gap
+            for num_box in paragraph.select('.numBox'):
+                
+                num_box.string.replace_with("_"*3 + num_box.get_text() + "_"*3)
             
+            # retrieve questions from no answers 
+            if a_struct[0] == 'gap_option' or a_struct[0] == 'gap_options':
+                
+                parsed_q.append(paragraph.get_text().encode('ascii', 'ignore').decode()) 
+            
+            # retrieve questions and answers 
+            if a_struct[0] == 'gap_options':
+
+                parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1]) if answer.get_text().encode('ascii', 'ignore').decode() != ''])
+
+    # parse dialogues
+    elif q_struct[0] == 'dialogue':
+        
+        # for better readability 
+        dialogue = question 
+
+        # replace numbers with gap
+        for num_box in dialogue.select('.numBox'):
+            
+            num_box.string.replace_with("_"*3 + num_box.get_text() + "_"*3)
+        
+        # parse gap_option 
+        if a_struct[0] == 'gap_options':
+            
+            # store answers
+            answers = [option.get_text() for option in dialogue.select(a_struct[-1])]
+
+            # print(answers)
+            # print('-'*100)
+        
+        # # retrieve questions
+        # if a_struct[0] == 'gap_option' or a_struct[0] == 'gap_options':
+        # # retrieve questions
+        # if a_struct[0] == 'gap_option' or a_struct[0] == 'gap_options':
+
+        #     q_number += len(question.select('.numBox'))
+            
+        #     # retrieve each line of text
+        #     for line in question.find_all():
+                
+        #         print(line.name)
+        #         print('-'*100)
+        #         # parsed_q.append(line)
+        
+        # # retrieve answers
+        # if a_struct[0] == 'gap_options':
+
+        #     parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1]) if answer.get_text().encode('ascii', 'ignore').decode() != ''])
+        #     q_number += len(question.select('.numBox'))
+            
+        #     # retrieve each line of text
+        #     for line in question.find_all():
+                
+        #         print(line.name)
+        #         print('-'*100)
+        #         # parsed_q.append(line)
+        
+        # # retrieve answers
+        # if a_struct[0] == 'gap_options':
+
+        #     parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1]) if answer.get_text().encode('ascii', 'ignore').decode() != ''])
+        
+
+            
+# print(q_number)
 print(parsed_q)
 print(parsed_a)
 
