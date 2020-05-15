@@ -37,69 +37,89 @@ import re
 # https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/3/
 
 headers = {"User-Agent": "Mozilla/75.0"}
-pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
+# pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
 req = requests.get('https://test-english.com/grammar-points/b1-b2/review-verb-tenses-b1-b2/3/', headers=headers)
 page = BeautifulSoup(req.text, 'lxml')
 
+# questions = page.select(g_quest_sel)
 q_struct = find_q_struct(g_quest_sel, page)
 a_struct = find_a_struct(q_struct[0], q_selectors, g_quest_sel, page)
-# def parse_q_and_a(q_struct, a_struct, q_sel, a_sel, page):
-    # '''
-    # helper function for parsing form or text data from a target tests page
-    # '''
+
+
+
+# for each question find the input that has a value of ""
+soup = page.select(g_quest_sel)[1].select('.question-content')[0]
+inputs = soup.find_all('input', attrs={'class': 'watupro-gap'})
+elem = str(soup.contents[0])
+
+for input in inputs:    
+    pattern = re.compile(r''+str(input))
+    match = pattern.search(elem)
+
+    if match != None:
+
+        new = elem.replace(elem[match.start():match.end()], '_'*6)
+
+        elem = new
+
+new_soup = BeautifulSoup(elem, 'lxml')
+print(new_soup.get_text())
+
+
+# # def parse_q_and_a(q_struct, a_struct, q_sel, a_sel, page):
+#     # '''
+#     # helper function for parsing form or text data from a target tests page
+#     # '''
     
-parsed_q = []
-parsed_a = []
-print(q_struct)
-if q_struct[0] == 'form':
+# parsed_q = []
+# parsed_a = []
+# print(q_struct)
+# if q_struct[0] == 'form':
     
-    # bools
-    has_mul = False
+#     # bools
+#     has_mul = False
 
-    # parse all of the questions of the page and remove the numbers
-    questions = page.select(g_quest_sel)
+#     # parse all of the questions of the page and remove the numbers
+#     questions = page.select(g_quest_sel)
 
-    for question in questions:
+#     for question in questions:
         
-        # remove number from questions
-        question.select('.watupro_num')[0].string.replace_with('')
+#         # remove number from questions
+#         question.select('.watupro_num')[0].string.replace_with('')
         
-        # ----------------- parse multiple choice questions -------------
+#         # ----------------- parse multiple choice questions -------------
 
-        # parse multiple choice options answers
-        if a_struct[0] == 'multiple_c_options':
+#         # parse multiple choice options answers
+#         if a_struct[0] == 'multiple_c_options':
 
-            # parse answers
-            parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
+#             # parse answers
+#             parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
         
-        # parse multiple choice bullet answers
-        elif a_struct[0] == 'multiple_c_bullets':
+#         # parse multiple choice bullet answers
+#         elif a_struct[0] == 'multiple_c_bullets':
 
-            # remove bullets
-            for answer_n in question.select('i'):
+#             # remove bullets
+#             for answer_n in question.select('i'):
                 
-                answer_n.string.replace_with('')
+#                 answer_n.string.replace_with('')
 
-            # parse answers
-            parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
+#             # parse answers
+#             parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
         
-        # parse multiple choice boxes answers
-        elif a_struct[0] == 'multiple_c_boxes':
+#         # parse multiple choice boxes answers
+#         elif a_struct[0] == 'multiple_c_boxes':
             
-            parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
+#             parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
         
-        # parse gap_option
-        elif a_struct[0] == 'gap_option':
+#         # parse gap_option
+#         elif a_struct[0] == 'gap_option':
         
-            pass
-
-        # parse qupend(question.select(q_struct[-1])[0].get_text().strip())estions
-        parsed_q.ap
+#             print(question)
         
 
     
-print(parsed_q)
-print(parsed_a)
+# print(parsed_q)
+# print(parsed_a)
 
 
         
