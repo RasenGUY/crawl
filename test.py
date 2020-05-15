@@ -39,7 +39,7 @@ import re
 
 headers = {"User-Agent": "Mozilla/75.0"}
 # pattern = re.compile(r'(\b\d+|\b[a-zA-Z]\.)')
-req = requests.get('https://test-english.com/grammar-points/a2/infinitives-and-gerunds/3/', headers=headers)
+req = requests.get('https://test-english.com/grammar-points/a2/however-although-time-connectors/', headers=headers)
 page = BeautifulSoup(req.text, 'lxml')
 
 
@@ -76,7 +76,7 @@ if q_struct[0] == 'form':
     for question in questions:
         
         # remove number from questions
-        question.select('.watupro_num')[0].string.replace_with('')
+        question.select('.watupro_num')[0].clear()
         
         # ----------------- parse multiple choice questions -------------
 
@@ -103,13 +103,8 @@ if q_struct[0] == 'form':
             parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1])])
         
         # parse gap_option (just has questions no options to select from)
-        elif a_struct[0] == 'gap_option':
+        elif a_struct[0] == 'gap_option' or a_struct[0] == 'gap_options':
             
-            # strip numbers from the questions
-            for quest_n in question.select('.watupro_num'):
-                
-                quest_n.clear()
-                
             # replace inputs with literal gap string
             inputs = question.select(a_struct[-1])
             
@@ -120,14 +115,18 @@ if q_struct[0] == 'form':
 
                 if match != None:
 
-                    new = elem.replace(elem[match.start():match.end()], '_'*8)
-
+                    new = elem.replace(elem[match.start():match.end()], '_'*3)
                     elem = new
 
             parsed_q.append((BeautifulSoup(elem, 'lxml').get_text().strip()))
+
+            # if gap options store answers
+            if a_struct[0] == 'gap_options':
+                
+                parsed_a.append([answer.get_text() for answer in question.select(a_struct[-1]) if answer.get_text() != ''])
             
 print(parsed_q)
-# print(parsed_a)
+print(parsed_a)
 
 
         
