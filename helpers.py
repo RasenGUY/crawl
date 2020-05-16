@@ -160,7 +160,11 @@ def find_a_struct(q_struct, sels, q_sel, page):
                 
                 else:
                     a_struct = sel[-1]
-                    a_tag = sel[0]
+
+                    if a_struct == 'gap_options':
+                        a_tag = sel[0].strip('option').strip()
+                    else:
+                        a_tag = sel[0]
         
     if a_tag != None:
         return (a_struct, a_tag)
