@@ -61,6 +61,8 @@ def find_page_struct(page, struct):
 
             return struct_type
 
+            
+
 def find_q_struct(selector, page):
     '''
     Helper function that finds the question structure of the test
@@ -88,6 +90,11 @@ def find_q_struct(selector, page):
     if len(page.find_all(string=re.compile(r'Dialogue \d+'))) > 0:
 
         q_struct = 'dialogue'
+        q_tag = '.question-content'
+    
+    else:
+
+        q_struct = 'special'
         q_tag = '.question-content'
 
     return (q_struct, q_tag)
@@ -146,7 +153,7 @@ def find_a_struct(q_struct, sels, q_sel, page):
                     a_tag = sel[0]
 
         # find answer structure in a text      
-        elif q_struct == 'text' or q_struct == 'dialogue':
+        elif q_struct == 'text' or q_struct == 'dialogue' or q_struct == 'special':
 
             # texts do not contain multipe choice answer structures
             if sel[-1] == 'multiple_c':
@@ -170,5 +177,16 @@ def find_a_struct(q_struct, sels, q_sel, page):
         return (a_struct, a_tag)
     
     else:
-        return (a_struct, 'no answer tag')
+        return ('no struct tag', 'no answer tag')
         
+def retr_q_id(soup):
+    
+    # retrieve the form id
+    pattern = re.compile(r'\d+')
+    id_string = soup.parent.attrs['id']
+    match = pattern.search(id_string)
+    id = id_string[match.start():match.end()]
+    
+    return id
+
+     

@@ -6,9 +6,11 @@ This module contains all of possible tag strcuture schemes for the parsing the d
 '''
 
 # selectors for getting the question structure
-# global question selector
 g_quest_sel = '.quiz-form .watu-question'
 q_selectors = [('.question-content input.watupro-gap', 'gap_option'), ('.question-content select.watupro-gap option', 'gap_options'), ('.question-choices', 'multiple_c')]
+
+# selectors for parsing answers data
+g_exp_sel = '#exercises #watupro_quiz'
 
 
 # ---------------- Test Pages ----------
@@ -29,75 +31,6 @@ grammer_scheme = {
     'content' : dict(),
     'answers' : dict()
 }
-
-# deprecated
-test_structs = [
-    [
-        ('.question-content .watupro-gap option', 'g-w-o'), # g-w-o
-        {
-            'questions': '.quiz-form .watu-question .question-content p',
-            'options': ['select.watupro-gap', 'option']  
-        }
-    ], 
-    [
-        ('.watu-question .question-choices .watupro-question-choice.watupro-ansnum', 'multiple-c-w-b'), # multiple-c-w-b
-        { 
-            'questions': '.quiz-form .watu-question .question-content p', 
-            'options': ['.question-choices', '.watupro-question-choice']
-            }
-    ],
-    [
-        ('.watu-question .question-choices select', 'multiple-c-w-o'), # multiple-c-w-o
-        { 
-            'questions': '.quiz-form .watu-question .question-content p', 
-            'options': ['.question-choices select', 'option']
-            }
-    ],
-    [
-        ('.watu-question input.watupro-gap', 'g-w-s-text'), # g-w-s-text
-        {   
-            'questions': ['.quiz-form .watu-question .question-content p', '.numBox'],
-            'options': None
-        }
-    ],
-    [
-        ('.watu-question .question-content p input.watupro-gap', 'g-w-s-'), # g-w-s-text
-        {   
-            'questions': '.quiz-form .watu-question .question-content p',
-            'options': None
-        }
-    ]
-    
-]
-
-
-
-
-
-# notes
-    # three type schemes
-        # 1. gap with options
-            # - everything is the same but the options of the questions are in a select tab in the "question-content" div  select tag is called watupro_gap
-            # store in list without numbers, numbers can be created when print
-        # 2. gap with bullets
-            # question are in question-choices, label
-        # 3. gap with single answers
-            # options are in a div class=textBox above the excercise
-            # there is only one class=question-content 
-
-
-# todo 
-# write function that determines the test_format
-    # return gap-w-o
-    # return gap-w-b
-    # return gap-w-s
-
-# normalizing things
-    # grammer and writing texts both have excercises
-    # reading and listening are usually consist of just one excercise
-
-
-
 
 # ---------------------------------------------------
  
