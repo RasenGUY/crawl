@@ -9,10 +9,6 @@ This module contains all of possible tag strcuture schemes for the parsing the d
 g_quest_sel = '.quiz-form .watu-question'
 q_selectors = [('.question-content input.watupro-gap', 'gap_option'), ('.question-content select.watupro-gap option', 'gap_options'), ('.question-choices', 'multiple_c')]
 
-# selectors for parsing answers data
-g_exp_sel = '#exercises #watupro_quiz'
-
-
 # ---------------- Test Pages ----------
 # level-test
 level_test_scheme = {

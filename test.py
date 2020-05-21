@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
-from schemes import *
-from helpers import *
 from tests_parser import *
+from helpers import *
 import re
 
 # Links to extract
@@ -44,9 +43,13 @@ import re
 # https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/3/
 
 # special pages
-    # writing (special cases)
-        # https://test-english.com/writing/b1-b2/formal-email-letter-asking-information/4/
+    # writing (special cases)(done)
         # https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/2/
+    
+    # not done completely
+        # https://test-english.com/writing/b1-b2/narrative-writing-step-by-step/2/ 
+        # https://test-english.com/writing/b1-b2/formal-email-letter-asking-information/4/
+        # https://test-english.com/reading/b1/ebay-tips-selling-successfully/
 
 # some notes for parsing answers
     # forms of feedback
@@ -61,25 +64,29 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/2/', headers=headers[0])
+req = requests.get('https://test-english.com/grammar-points/b1-b2/review-verb-tenses-b1-b2/3/', headers=headers[0])
+
+page = BeautifulSoup(req.text, 'lxml')
+q_struct = find_q_struct(g_quest_sel, page)
+
+# get quiz id
+q_id = retr_q_id(page.select(g_quest_sel)[0])
+headers[-1][-1]['quiz_id'] = q_id
+payload = headers[-1][-1]
+post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+
+req = requests.post(post_link, data=payload, headers=headers[-1][0])
 
 page = BeautifulSoup(req.text, 'lxml')
 
-# get quiz id
-# q_id = retr_q_id(page.select(g_quest_sel)[0])
-# headers[-1][-1]['quiz_id'] = q_id
-# payload = headers[-1][-1]
-# post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+parse_tests_answers(q_struct[0], page)
 
-# req = requests.post(post_link, data=payload, headers=headers[-1][0])
-
-# page = BeautifulSoup(req.text, 'lxml')
 
 # all parsed content
-parsed_c = parse_tests_content(g_quest_sel, q_selectors, page)
-print(parsed_c[0])
-print(parsed_c[1])
-print(parsed_c[2])
+# parsed_c = parse_tests_content(page)
+# print(parsed_c[0])
+# print(parsed_c[1])
+# print(parsed_c[2])
 
 
 
