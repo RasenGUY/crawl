@@ -64,13 +64,13 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/grammar-points/b1-b2/review-verb-tenses-b1-b2/3/', headers=headers[0])
+req = requests.get('https://test-english.com/listening/b1/stonehenge/', headers=headers[0])
 
 page = BeautifulSoup(req.text, 'lxml')
 q_struct = find_q_struct(g_quest_sel, page)
 
 # get quiz id
-q_id = retr_q_id(page.select(g_quest_sel)[0])
+q_id = retr_q_id(page.select('.quiz-form')[0])
 headers[-1][-1]['quiz_id'] = q_id
 payload = headers[-1][-1]
 post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'

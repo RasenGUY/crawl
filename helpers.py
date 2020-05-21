@@ -264,10 +264,11 @@ def retr_q_id(soup):
     
     # retrieve the form id
     pattern = re.compile(r'\d+')
-    id_string = soup.parent.attrs['id']
+    id_string = soup.attrs['id']
+    
     match = pattern.search(id_string)
     id = id_string[match.start():match.end()]
-    
+   
     return id
 
 def parse_tests_questions(g_quest_sel, q_selectors, page):
@@ -466,6 +467,11 @@ def parse_tests_answers(q_struct, page):
     ca = list()
     ca_fb = list()
 
+    # remove 'correct' text 
+    cor_syms = page.select('.watupro-screen-reader')
+    for symbol in cor_syms:
+        symbol.clear()
+    
     # loop through columns
     for column in ca_answers:
         
@@ -488,19 +494,41 @@ def parse_tests_answers(q_struct, page):
             else:
 
                 ca.append(column.select(ca_fb_sct[-1])[0].get_text().encode('ascii', 'ignore').decode())
+        
+        # check for struct store answers
+        elif ca_fb_sct[0] == 'ca_multiple_bullets_wf':
+            
+            # store correct answers check if column contains multiple correct answers first
+            if len(column.select(ca_fb_sct[-1][-1])) > 1:
 
+                ca.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1][-1])])
+            
+            else:
+                
+                ca.append(column.select(ca_fb_sct[-1][-1])[0].get_text().encode('ascii', 'ignore').decode())
+
+            # store feedback  
+            if ca_fb_sct[-1][0] == '.watupro-main-feedback > p, h4':
+                
+                if len(column.select(ca_fb_sct[-1][0])) > 1:
+
+                    ca_fb.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1][0])])
+                
+                else:
+
+                    ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
+            else:
+
+                ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
+        
         elif ca_fb_sct[0] == 'ca_multiple_bullets_wof':
             pass
 
-        elif ca_fb_sct[0] == 'ca_multiple_bullets_wf':
-            pass
 
     print(ca)
-
-                    
-
-            
-    
+    print(len(ca))
+    print(ca_fb)
+    print(len(ca_fb))
 
     
      
