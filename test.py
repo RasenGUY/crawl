@@ -64,7 +64,7 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/listening/b1/stonehenge/', headers=headers[0])
+req = requests.get('https://test-english.com/writing/b1-b2/formal-email-letter-asking-information/4/', headers=headers[0])
 
 page = BeautifulSoup(req.text, 'lxml')
 q_struct = find_q_struct(g_quest_sel, page)

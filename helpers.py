@@ -200,7 +200,7 @@ def find_ca_feedback_struct(ca_struct, page):
         if len(page.select(ca_struct[-1])[0].select('.show-question-choices')) > 0:
             
             ca_fb_sct.append(ca_struct[0] + '_bullets')
-            ca_fb_sct.append(ca_struct[0] + ' ' + '.show-question-choices > .correct-answer')
+            ca_fb_sct.append('.show-question-choices .correct-answer')
         
         # if no bullets then assign tag
         else:
@@ -472,6 +472,17 @@ def parse_tests_answers(q_struct, page):
     for symbol in cor_syms:
         symbol.clear()
     
+    # unwrap u tags
+    u_tags = page.select('u')
+    for tag in u_tags:
+        tag.unwrap()
+
+    # insert space before and after content in <strong> tags
+    strong_tags = page.select('strong')
+    for tag in strong_tags:
+        tag.insert(0, ' ') 
+        tag.insert(len(''.join(tag.contents)), ' ')
+
     # loop through columns
     for column in ca_answers:
         
@@ -495,35 +506,63 @@ def parse_tests_answers(q_struct, page):
 
                 ca.append(column.select(ca_fb_sct[-1])[0].get_text().encode('ascii', 'ignore').decode())
         
-        # check for struct store answers
-        elif ca_fb_sct[0] == 'ca_multiple_bullets_wf':
+        # store answers with multiple columns bullets and w/wo feedback
+        elif ca_fb_sct[0] == 'ca_multiple_bullets_wf' or ca_fb_sct[0] == 'ca_multiple_bullets_wof' or ca_fb_sct[0] == 'ca_single_bullets':
             
-            # store correct answers check if column contains multiple correct answers first
-            if len(column.select(ca_fb_sct[-1][-1])) > 1:
+            if ca_fb_sct[0] == 'ca_multiple_bullets_wf':
+                
+                ca_fb_sel = ca_fb_sct[-1][-1]
+            
+            else: 
+                
+                ca_fb_sel = ca_fb_sct[-1]
 
-                ca.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1][-1])])
+            # store correct answers check if column contains multiple correct answers first
+            if len(column.select(ca_fb_sel)) > 1:
+
+                ca.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sel)])
             
             else:
                 
-                ca.append(column.select(ca_fb_sct[-1][-1])[0].get_text().encode('ascii', 'ignore').decode())
+                ca.append(column.select(ca_fb_sel)[0].get_text().encode('ascii', 'ignore').decode())
+            
+            
+            # store with feedback only for ca_multiple_bullets_wf 
+            if ca_fb_sct[0] == 'ca_multiple_bullets_wf':
 
-            # store feedback  
-            if ca_fb_sct[-1][0] == '.watupro-main-feedback > p, h4':
-                
-                if len(column.select(ca_fb_sct[-1][0])) > 1:
+                # store feedback  
+                if ca_fb_sct[-1][0] == '.watupro-main-feedback > p, h4':
+                    
+                    # store elements in list aof list if feedback contains more then one p or h
+                    if len(column.select(ca_fb_sct[-1][0])) > 1:
 
-                    ca_fb.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1][0])])
+                        ca_fb.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1][0])])
+                    
+                    # store in list of strings if feedback contains only one p element 
+                    else:
+
+                        ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
                 
+                # store feedback as is if tag is just .watupro-main-feedback  
                 else:
 
                     ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
-            else:
 
-                ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
+        # store correct answers with dialogue struct
+        elif ca_fb_sct[0] == 'ca_dialogue' or ca_fb_sct[0] == 'ca_single':
+            
+            # add '.' after number in numbox
+            numbers = column.select('.numBox')
+            for num in numbers:
+                num.insert(1, '.')
+
+            # store all of the p, and h4 elements in column in list of lists
+            ca.append([line.get_text().encode('ascii', 'ignore').decode().strip() for line in column.select(ca_fb_sct[-1])])
         
-        elif ca_fb_sct[0] == 'ca_multiple_bullets_wof':
-            pass
+        elif ca_fb_sct[0] == 'ca_single_bullets': 
+            pass 
 
+            
 
     print(ca)
     print(len(ca))
