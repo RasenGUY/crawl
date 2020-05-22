@@ -30,6 +30,7 @@ def rem_soup_ins_re(targets, soup, repl_str, parser='lxml'):
 
     # remove target instances from string 
     elem = str(soup)
+    
     for target in targets:
         
         pattern = re.compile(r''+str(target))
@@ -40,7 +41,7 @@ def rem_soup_ins_re(targets, soup, repl_str, parser='lxml'):
             new = elem.replace(elem[match.start():match.end()], repl_str)
 
             elem = new 
-    
+
     return BeautifulSoup(elem, parser) 
 
 
@@ -63,20 +64,25 @@ def find_q_struct(selector, page):
 
     elif len(page.select(selector)) == 1:
         
-        q_struct = 'text'
+        
+        # check if special
+        if len(page.select('.question-content h4')) > 0:
+            
+            q_struct = 'special'
+            q_tag = '.question-content'
+        
+        else:
+            
+            q_struct = 'text'
+            # tag to retreive questins or questions
+            q_tag = '.question-content p'
 
-        # tag to retreive questins or questions
-        q_tag = '.question-content p'
     
     if len(page.find_all(string=re.compile(r'Dialogue \d+'))) > 0:
 
         q_struct = 'dialogue'
         q_tag = '.question-content'
     
-    else:
-
-        q_struct = 'special'
-        q_tag = '.question-content'
 
     return (q_struct, q_tag)
 
@@ -271,18 +277,13 @@ def retr_q_id(soup):
    
     return id
 
-def parse_tests_questions(g_quest_sel, q_selectors, page):
+def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
     '''
     helper function for parsing questions of tests from test-english
     '''
     
     # necessary variables 
     questions = page.select(g_quest_sel)
-    q_struct = find_q_struct(g_quest_sel, page)
-    a_struct = find_a_struct(q_struct[0], q_selectors, g_quest_sel, page)
-    
-    # print(q_struct)
-    # print(a_struct)
 
     # empty questions and answers strings and question number counter
     parsed_q = []
@@ -291,6 +292,11 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
 
     # parse all questions questions in the test form
     questions = page.select(g_quest_sel)
+
+    # remove all breadcrumbs
+    bread_crumbs = page.select('.watupro-qnum-info')
+    for crumb in bread_crumbs:
+        crumb.clear()
     
     for question in questions:
 
@@ -306,27 +312,29 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
                 q_number += len(question.select('.watupro_num'))
             
             # remove number from questions
-            question.select('.watupro_num')[0].clear()
+            if len(question.select('.watupro_num')) > 0:  
+                question.select('.watupro_num')[0].clear()
 
             # ----------------- parse form  questions and answers -------------------
         
             # replace inputs and parse answers if gap_options or gap_option
             if a_struct[0] == 'gap_option' or a_struct[0] == 'gap_options':
                 
-                # replace inputs with literal gap string
-                inputs = question.select(a_struct[-1])
-                
-                if a_struct == 'gap_option': 
-
+                if a_struct[0] == 'gap_option': 
+                    # replace inputs with literal gap string
+                    inputs = question.select(a_struct[-1])
                     new_soup = rem_soup_ins_re(inputs, question, '_'*5)
 
                 else:
+
+                    # replace inputs with literal gap string
+                    inputs = question.select(a_struct[-1].strip('option'))
                     new_soup = rem_soup_ins_re(inputs, question, '_'*6)
                 
                 # parse questions with one gap or more gaps
                 if new_soup.get_text().rfind('\xa0') != -1:
 
-                    parsed_q.append(new_soup.get_text().encode('ascii', 'ignore').decode().strip())
+                    parsed_q.append(new_soup.get_text().replace('\xa0', ' ').strip())
                 
                 else:
                     
@@ -343,7 +351,7 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
                 # parse questions 
                 if question.select(q_struct[-1])[0].get_text().rfind('\xa0') != -1:
                 
-                    parsed_q.append(question.select(q_struct[-1])[0].get_text().encode('ascii', 'ignore').decode().strip())
+                    parsed_q.append(question.select(q_struct[-1])[0].get_text().replace('\xa0', ' ').strip())
                 else:
                     parsed_q.append(question.select(q_struct[-1])[0].get_text().strip())
 
@@ -356,7 +364,7 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
                         
                         answer_n.clear()
                         
-                parsed_a.append([answer.get_text().encode('ascii', 'ignore').decode().strip() for answer in question.select(a_struct[-1])])
+                parsed_a.append([answer.get_text().replace('\xa0', ' ').strip() for answer in question.select(a_struct[-1])])
 
 
         elif q_struct[0] == 'text' or q_struct[0] == 'dialogue' or q_struct[0] == 'special':       
@@ -366,7 +374,7 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
 
             # number of possible answers
             answers = text.select(a_struct[-1])
-            
+
             # parse answers only if options 
             if a_struct[0] == 'gap_options':
                 
@@ -374,10 +382,13 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
     
             # if there are Numboxes replace them with gaps, else replace inputs
             if len(text.select('.numBox')) > 0:
-            
-                for num_box in text.select('.numBox'):
+                
+                numbers = text.select('.numBox')
+                
+                # count numbers replace numbox with gaps
+                for num_box in numbers:
                     
-                    # count numbers
+                    # remove example text if there is any
                     if num_box.get_text() == '0':
                         
                         num_box.string.replace_with("_"*1 + text.select('.textGap')[0].get_text() + "_"*1)
@@ -390,10 +401,16 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
 
                         q_number += 1
 
-                num_box.string.replace_with("_"*3 + num_box.get_text() + "_"*3)
-           
+                    if q_struct[0] == 'text':
+                        
+                        num_box.string.replace_with(num_box.get_text() +' ' + '__'*4 + ' ')
+                    
+                    elif q_struct[0] == 'dialogue': 
+
+                        num_box.string.replace_with(' '+ num_box.get_text() +' ' + '__'*4 )
+
             # replace inputs if special struct else clear the inputs
-            elif q_struct[0] == 'special' and len(answers) > 0:
+            if q_struct[0] == 'special' and len(answers) > 0:
 
                 new_soup = rem_soup_ins_re(answers, question, '_'*5)
 
@@ -414,7 +431,7 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
 
                     if paragraph.get_text().rfind('\xa0') != -1 :
                     
-                        parsed_q.append(paragraph.get_text().encode('ascii', 'ignore').decode().strip())
+                        parsed_q.append(paragraph.get_text().replace('\xa0', ' ').strip())
 
                     else:
                         parsed_q.append(paragraph.get_text().strip())
@@ -431,10 +448,13 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
                     
                     if line.get_text().rfind('\xa0') != -1:
                     
-                        parsed_q.append(line.get_text().encode('ascii', 'ignore').decode().strip())
+                        parsed_q.append(line.get_text().replace('\xa0', ' ').strip())
 
                     else:
-                        parsed_q.append(line.get_text().strip())
+                        
+                        if line.get_text() != '':
+
+                            parsed_q.append(line.get_text().strip())
 
                 # handle excercise 4 writing (special case)
                 if a_struct[0] == 'no struct tag':
@@ -442,23 +462,16 @@ def parse_tests_questions(g_quest_sel, q_selectors, page):
                     a_tag = '.watupro-question-choice label'
 
                     # parse answers
-                    parsed_a.append([answer.get_text().encode('ascii', 'ignore').decode().strip() for answer in text.select(a_tag)])
+                    parsed_a.append([answer.get_text().replace('\xa0', ' ').strip() for answer in text.select(a_tag)])
     
     # return parsed content
     return (parsed_q, parsed_a, q_number)
 
-def parse_tests_answers(q_struct, page):
+def parse_tests_answers(q_struct, page, ca_sct, ca_fb_sct):
 
     '''
     Function for parsing the correct answers of tests from the tests website
     '''
-    
-    # find struct for correct answers page and struct for retrieving the feedback data
-    ca_sct = find_ca_struct(q_struct, page)
-    ca_fb_sct =  find_ca_feedback_struct(ca_sct, page)
-
-    print(ca_sct)
-    print(ca_fb_sct)
 
     # get the main elements
     ca_answers = page.select(ca_sct[-1])
@@ -496,15 +509,15 @@ def parse_tests_answers(q_struct, page):
                 
                 if len(column.select(ca_fb_sct[-1])) > 1:
 
-                    ca.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1])])
+                    ca.append([line.get_text().replace('\xa0', ' ') for line in column.select(ca_fb_sct[-1])])
                 
                 else:
 
-                    ca.append(column.select(ca_fb_sct[-1])[0].get_text().encode('ascii', 'ignore').decode())
+                    ca.append(column.select(ca_fb_sct[-1])[0].get_text().replace('\xa0', ' '))
 
             else:
 
-                ca.append(column.select(ca_fb_sct[-1])[0].get_text().encode('ascii', 'ignore').decode())
+                ca.append(column.select(ca_fb_sct[-1])[0].get_text().replace('\xa0', ' '))
         
         # store answers with multiple columns bullets and w/wo feedback
         elif ca_fb_sct[0] == 'ca_multiple_bullets_wf' or ca_fb_sct[0] == 'ca_multiple_bullets_wof' or ca_fb_sct[0] == 'ca_single_bullets':
@@ -520,11 +533,11 @@ def parse_tests_answers(q_struct, page):
             # store correct answers check if column contains multiple correct answers first
             if len(column.select(ca_fb_sel)) > 1:
 
-                ca.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sel)])
+                ca.append([line.get_text().replace('\xa0', ' ') for line in column.select(ca_fb_sel)])
             
             else:
                 
-                ca.append(column.select(ca_fb_sel)[0].get_text().encode('ascii', 'ignore').decode())
+                ca.append(column.select(ca_fb_sel)[0].get_text().replace('\xa0', ' '))
             
             
             # store with feedback only for ca_multiple_bullets_wf 
@@ -536,17 +549,17 @@ def parse_tests_answers(q_struct, page):
                     # store elements in list aof list if feedback contains more then one p or h
                     if len(column.select(ca_fb_sct[-1][0])) > 1:
 
-                        ca_fb.append([line.get_text().encode('ascii', 'ignore').decode() for line in column.select(ca_fb_sct[-1][0])])
+                        ca_fb.append([line.get_text().replace('\xa0', ' ') for line in column.select(ca_fb_sct[-1][0])])
                     
                     # store in list of strings if feedback contains only one p element 
                     else:
 
-                        ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
+                        ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().replace('\xa0', ' ').strip(' '))
                 
                 # store feedback as is if tag is just .watupro-main-feedback  
                 else:
 
-                    ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().encode('ascii', 'ignore').decode().strip(' '))
+                    ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().replace('\xa0', ' ').strip(' '))
 
         # store correct answers with dialogue struct
         elif ca_fb_sct[0] == 'ca_dialogue' or ca_fb_sct[0] == 'ca_single':
@@ -557,17 +570,50 @@ def parse_tests_answers(q_struct, page):
                 num.insert(1, '.')
 
             # store all of the p, and h4 elements in column in list of lists
-            ca.append([line.get_text().encode('ascii', 'ignore').decode().strip() for line in column.select(ca_fb_sct[-1])])
+            ca.append([line.get_text().replace('\xa0', ' ').strip() for line in column.select(ca_fb_sct[-1])])
+
+    return (ca, ca_fb)
+
+def parse_tests_expls(page, selector):
+    
+    '''
+    Helper function for retrieving explanation data from tests just provide the page, and approriate selector
+    '''
+
+    elements = page.select(selector)
+    parsed_expls = []
+    
+    # unwrap all unnecessary markup
+    for markup in page.select('#explanation em, #explanation u, #explanation i, #explanation span'):
+        markup.unwrap()
+
+    # handle all the elements on explanation page
+    for element in elements:
+
+        # handle images
+        if element.name == 'img':
+            parsed_expls.append([element.attrs['data-wpfc-original-src'].replace('website18/', ''), element.attrs['alt']])
+            continue
+
+        # handle lists 
+        if element.name == 'ul':
+            item = element.get_text().replace('\xa0', ' ').replace('\n', '\n\t')
+            parsed_expls.append(item[:len(item)-2])
+            continue 
+
+        if element.get_text() == '' or element.get_text() == '\xa0':
+            pass
         
-        elif ca_fb_sct[0] == 'ca_single_bullets': 
-            pass 
+        else:
+            parsed_expls.append(element.get_text().replace('\xa0', ' '))
 
-            
+           
+    return parsed_expls
 
-    print(ca)
-    print(len(ca))
-    print(ca_fb)
-    print(len(ca_fb))
+        
+        
+
+
 
     
      

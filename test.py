@@ -45,12 +45,16 @@ import re
 # special pages
     # writing (special cases)(done)
         # https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/2/
+        # note (does not contain correct answers)
     
     # not done completely
         # https://test-english.com/writing/b1-b2/narrative-writing-step-by-step/2/ 
         # https://test-english.com/writing/b1-b2/formal-email-letter-asking-information/4/
         # https://test-english.com/reading/b1/ebay-tips-selling-successfully/
-
+        # https://test-english.com/grammar-points/a2/present-continuous-future-arrangements/3/
+            # check correct answers 
+        # https://test-english.com/grammar-points/a2/however-although-time-connectors/3/
+            # check correct answers 
 # some notes for parsing answers
     # forms of feedback
         # bullet form 
@@ -64,29 +68,24 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/writing/b1-b2/formal-email-letter-asking-information/4/', headers=headers[0])
+req = requests.get('https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/', headers=headers[0])
 
-page = BeautifulSoup(req.text, 'lxml')
-q_struct = find_q_struct(g_quest_sel, page)
+q_page = BeautifulSoup(req.text, 'html.parser')
 
 # get quiz id
-q_id = retr_q_id(page.select('.quiz-form')[0])
+q_id = retr_q_id(q_page.select('.quiz-form')[0])
+print(q_id)
 headers[-1][-1]['quiz_id'] = q_id
 payload = headers[-1][-1]
 post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
 
 req = requests.post(post_link, data=payload, headers=headers[-1][0])
 
-page = BeautifulSoup(req.text, 'lxml')
+ca_page = BeautifulSoup(req.text, 'lxml')
 
-parse_tests_answers(q_struct[0], page)
+content = parse_tests_content(q_page, ca_page)
+print(content)
 
-
-# all parsed content
-# parsed_c = parse_tests_content(page)
-# print(parsed_c[0])
-# print(parsed_c[1])
-# print(parsed_c[2])
 
 
 

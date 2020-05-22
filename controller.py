@@ -8,7 +8,7 @@ import sys
 
 # app libraries
 from helpers import *
-from schemes import *
+from schemes import grammer_scheme
 from tests_parser import *
 
 sys.setrecursionlimit(10000)
@@ -59,7 +59,7 @@ class Crawler:
         self.site = site
         self.ils = set()
 
-    def get_page(self, url, method, headers, return_req_object=False, parser='html.parser'):
+    def get_page(self, url, method, headers, return_req_object=False, parser='html.parser', payload={}):
         """
         utility function that sends a request to a target website
         method can be get or post and return a soup object 
@@ -75,7 +75,7 @@ class Crawler:
 
         else:
             try:
-                req = requests.get(url, headers=headers)
+                req = requests.get(url, headers=headers, data=payload)
             except requests.exceptions.RequestException:
                 return None
             
@@ -148,19 +148,28 @@ class Crawler:
             print("-"*100)
             if target != None:
                 print("Found target {}".format(target[0]))
-                page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True, parser='lxml')
-                
-                page_type = parse.urlparse(req.url).path.strip('/').split('/')[0]
+
+                # retrieve questions page
+                q_page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True, parser='lxml')
+
+                # retrieve answers page
+                payload = self.site.headers[-1][-1]
+                self.site.headers[-1][-1]['quiz_id'] = retr_q_id(q_page.select('.quiz-form')[0])
+                ca_page = self.get_page(target, 'POST', self.site.headers[-1][0], parser='lxml', payload=payload)
+
+                # get test type 
+                test_type = parse.urlparse(req.url).path.strip('/').split('/')[0]
 
                 
                 # if test-category is level-test 
-                if page_type == 'level-test':
+                if test_type == 'level-test':
                     pass 
+
                     # create content instance for level-test
                     # create site instance for level-test
                         # parse page
                     # store information from level-test content instance
-                    # create document out of content instance
+                    # create document out of content instance 
                     
                 
                 # if page is title is grammer-points do something
@@ -193,12 +202,12 @@ if __name__ == "__main__":
     websites = [
         [
             "https://test-english.com/",
-            [{"User-Agent": "Mozilla/75.0"}, [{"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}]] ,
+            [{"User-Agent": "Mozilla/75.0"}, [{"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": ''}]] ,
             'h1',
             ["a", {"href" : re.compile(r'(\?p=[0-9]*)|((https://)|(https://www\.))test-english\.com')}],
             ["form", {"class" : "quiz-form"}],
             "https://test-english.com/staging01/wp-admin/admin-ajax.php",
-            grammer_tags_scheme
+            grammer_scheme
         ],
         ["http://www.englishprofile.org/wordlists/evp"],
     ]
