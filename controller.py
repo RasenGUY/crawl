@@ -8,15 +8,15 @@ import sys
 
 # app libraries
 from helpers import *
-from schemes import grammer_scheme
+from schemes import *
 from tests_parser import *
 
 sys.setrecursionlimit(10000)
 
 
 class Webpage:
-    """
     
+    """
     common base information structure of the target website
     """
 
@@ -33,20 +33,21 @@ class Webpage:
         self.target_params = target_params
 
 class Tests(Webpage):
+
     """
     Information structure for reading tests
     instance receives a postlink and a test object and an answers object that contain the tags required for' getting the data
 
-    -------------------------------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------
     """
 
-    def __init__(self, url, headers, title, ils_if, target_params, post, tag_scheme):
+    def __init__(self, url, headers, title, ils_if, target_params, post):
 
         # initialize base class WebPage
         Webpage.__init__(self, url, headers, title, ils_if, target_params)
 
         self.post_link = post # link for making post_requests, this is unique for tests websites
-        self.tag_scheme = tag_scheme # tag scheme for retrieving content from a page 
+        self.tag_scheme = dict() # tag scheme for retrieving content from a page 
 
 
 
@@ -122,14 +123,15 @@ class Crawler:
         # see if the page has a form all test_pages on this site have one
         target_exists = self.get_page(url, 'GET', self.site.headers[0]).find(self.site.target_params[0], attrs= self.site.target_params[-1])
         
-        # find and return test page with instance  
+        # find and return target page link with number of instances in ils
         if target_exists != None:
             
-            # only if all of the internal links have already been extracted from the website
+            # functionality for retrieving instances of the link
             if look_for_inst == True: 
+
                 inst = find_pattern_inst(pattern, list)
 
-                return url, inst
+                return (url, inst)
 
             else:
                 return url
@@ -147,29 +149,29 @@ class Crawler:
 
             print("-"*100)
             if target != None:
+
                 print("Found target {}".format(target[0]))
+                print("Number of Instances {}".format(target[-1]))
 
                 # retrieve questions page
                 q_page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True, parser='lxml')
 
                 # retrieve answers page
-                payload = self.site.headers[-1][-1]
                 self.site.headers[-1][-1]['quiz_id'] = retr_q_id(q_page.select('.quiz-form')[0])
-                ca_page = self.get_page(target, 'POST', self.site.headers[-1][0], parser='lxml', payload=payload)
 
+                ca_page = self.get_page(target, 'POST', self.site.headers[-1][0], parser='lxml', payload=self.site.headers[-1][-1])
+                
                 # get test type 
                 test_type = parse.urlparse(req.url).path.strip('/').split('/')[0]
-
                 
                 # if test-category is level-test 
                 if test_type == 'level-test':
-                    pass 
-
-                    # create content instance for level-test
-                    # create site instance for level-test
-                        # parse page
-                    # store information from level-test content instance
-                    # create document out of content instance 
+                    
+                    # assign scheme appropriate to test type
+                    self.site.tag_scheme = general_scheme
+                    scheme = self.site.tag_scheme
+                    
+                    content = parse_tests_content(q_page, ca_page, scheme)
                     
                 
                 # if page is title is grammer-points do something
@@ -178,6 +180,11 @@ class Crawler:
                 
                 # if page is title is listening do something
                 # elif page_type == 'listening':
+                        # grab iframe source
+                        # strip the final characters after the '\#'
+                        # concatenate the substring to https://www.youtube.com/embed/-5iUfno6gPI
+                        # convert video to mp3 
+                        # store video 
                 #     print('Page Type {}'.format(page_type))
                 
                 # if page is title is reading do something
@@ -202,24 +209,21 @@ if __name__ == "__main__":
     websites = [
         [
             "https://test-english.com/",
-            [{"User-Agent": "Mozilla/75.0"}, [{"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": ''}]] ,
-            'h1',
+            [{"User-Agent": "Mozilla/75.0"}, [{"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": ''}]],
+            '.header h1',
             ["a", {"href" : re.compile(r'(\?p=[0-9]*)|((https://)|(https://www\.))test-english\.com')}],
             ["form", {"class" : "quiz-form"}],
-            "https://test-english.com/staging01/wp-admin/admin-ajax.php",
-            grammer_scheme
+            "https://test-english.com/staging01/wp-admin/admin-ajax.php"
         ],
         ["http://www.englishprofile.org/wordlists/evp"],
     ]
 
     # create website and crawler instance
-    test = Tests(websites[0][0], websites[0][1], websites[0][2],websites[0][3], websites[0][4], websites[0][5], websites[0][6])
+    test = Tests(websites[0][0], websites[0][1], websites[0][2], websites[0][3], websites[0][4], websites[0][5])
     test_crawler = Crawler(test)
     
     # feed links to crawler  
     test_crawler.ils = feed_crawler_links('eng_test_links.txt')
-    #
-
     # test_crawler.parse_tests_page()
 
 

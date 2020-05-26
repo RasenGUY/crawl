@@ -3,6 +3,7 @@ import requests
 from tests_parser import *
 from helpers import *
 import re
+from schemes import *
 
 # Links to extract
     # test with textbox 
@@ -68,23 +69,25 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/', headers=headers[0])
+req = requests.get('https://test-english.com/reading/a1/about-my-family/', headers=headers[0])
 
 q_page = BeautifulSoup(req.text, 'html.parser')
 
 # get quiz id
-q_id = retr_q_id(q_page.select('.quiz-form')[0])
-print(q_id)
-headers[-1][-1]['quiz_id'] = q_id
-payload = headers[-1][-1]
-post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+# q_id = retr_q_id(q_page.select('.quiz-form')[0])
+# headers[-1][-1]['quiz_id'] = q_id
+# payload = headers[-1][-1]
+# post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
 
-req = requests.post(post_link, data=payload, headers=headers[-1][0])
+# req = requests.post(post_link, data=payload, headers=headers[-1][0])
 
-ca_page = BeautifulSoup(req.text, 'lxml')
+# ca_page = BeautifulSoup(req.text, 'lxml')
 
-content = parse_tests_content(q_page, ca_page)
-print(content)
+# content = parse_tests_content(q_page, ca_page, general_scheme)
+# print(content)
+
+passage = parse_reading_test(q_page, general_scheme)
+print(passage)
 
 
 

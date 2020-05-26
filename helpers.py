@@ -391,7 +391,7 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
                     # remove example text if there is any
                     if num_box.get_text() == '0':
                         
-                        num_box.string.replace_with("_"*1 + text.select('.textGap')[0].get_text() + "_"*1)
+                        num_box.insert(1, ' ' + '_'*2 + text.select('.textGap')[0].get_text() + '_'*2)
 
                         text.select('.textGap')[0].clear()
 
