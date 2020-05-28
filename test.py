@@ -69,26 +69,44 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/reading/a1/about-my-family/', headers=headers[0])
+req = requests.get('https://test-english.com/listening/b1/500-year-old-paintings-raphael-found/', headers=headers[0])
 
 q_page = BeautifulSoup(req.text, 'html.parser')
 
 # get quiz id
-# q_id = retr_q_id(q_page.select('.quiz-form')[0])
-# headers[-1][-1]['quiz_id'] = q_id
-# payload = headers[-1][-1]
-# post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+q_id = retr_q_id(q_page.select('.quiz-form')[0])
+headers[-1][-1]['quiz_id'] = q_id
+payload = headers[-1][-1]
 
-# req = requests.post(post_link, data=payload, headers=headers[-1][0])
 
-# ca_page = BeautifulSoup(req.text, 'lxml')
+post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+req = requests.post(post_link, data=payload, headers=headers[0])
 
-# content = parse_tests_content(q_page, ca_page, general_scheme)
+ca_page = BeautifulSoup(req.text, 'lxml')
+
+content = parse_tests_content(q_page, ca_page, general_scheme)
 # print(content)
 
-passage = parse_reading_test(q_page, general_scheme)
-print(passage)
 
+post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
+audio_link = get_audio_link(q_page, listening_scheme)
+
+payload = {'search_txt': audio_link}
+
+hdrs = {'User-Agent': 'Mozilla/75.0'}
+req = requests.post(post_link, data=payload, headers=headers[-1][0])
+
+ad_page = BeautifulSoup(req.text, 'lxml')
+ 
+d_links = ad_page.find_all('option')
+d_link = None
+
+for link in d_links:
+    
+    if  link.get_text() == 'mp3\xa0128kbps':
+        d_link = 'https:' + link.attrs['data-link']
+
+print(d_link)
 
 
 

@@ -1,5 +1,5 @@
 import re
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag, NavigableString
 
 def feed_crawler_links(file):
     '''
@@ -492,9 +492,25 @@ def parse_tests_answers(q_struct, page, ca_sct, ca_fb_sct):
 
     # insert space before and after content in <strong> tags
     strong_tags = page.select('strong')
-    for tag in strong_tags:
-        tag.insert(0, ' ') 
-        tag.insert(len(''.join(tag.contents)), ' ')
+    
+    if len(strong_tags) != 0:
+        
+        for tag in strong_tags:
+
+            if isinstance(tag, NavigableString):
+
+                tag.insert(0, ' ') 
+                tag.insert(len(''.join(tag.contents)), ' ')
+            
+            elif isinstance(tag, Tag):
+
+                tag.unwrap()
+                tag.insert(0, ' ') 
+                tag.insert(len(''.join(tag.contents)), ' ')
+            
+            else:
+                continue
+                
 
     # loop through columns
     for column in ca_answers:

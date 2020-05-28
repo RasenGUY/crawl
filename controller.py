@@ -10,9 +10,9 @@ import sys
 from helpers import *
 from schemes import *
 from tests_parser import *
+from view import *
 
 sys.setrecursionlimit(10000)
-
 
 class Webpage:
     
@@ -56,34 +56,89 @@ class Crawler:
 
     Utility for cralwling and extracting information from target websites 
     """
-    def __init__(self, site):
+    def __init__(self, site, ils=False, folder_name=None):
         self.site = site
-        self.ils = set()
+        
+        if ils == False:
+            self.ils = set()
+        else: 
+            self.ils = feed_crawler_links(folder_name)
+
 
     def get_page(self, url, method, headers, return_req_object=False, parser='html.parser', payload={}):
         """
         utility function that sends a request to a target website
         method can be get or post and return a soup object 
         """
+        soup = None
+        req = None
+        timeout = (None, None)
 
-        if method.lower() == "GET":
-            try:
-                req = requests.get(url, headers=headers)
-            except requests.exceptions.RequestException:
-                return None
+        while soup == None:
             
-            return BeautifulSoup(req.text, parser)
+            # get request
+            if method == "GET":
+                    
+                try:
+                    req = requests.get(url, headers=headers, timeout=timeout)
+                    req.raise_for_status()
 
-        else:
-            try:
-                req = requests.get(url, headers=headers, data=payload)
-            except requests.exceptions.RequestException:
-                return None
-            
-            if return_req_object == False:
-                return BeautifulSoup(req.text, parser)
-            if return_req_object == True:
-                return BeautifulSoup(req.text, parser), req
+                except requests.exceptions.HTTPError as errh:
+
+                    print('HTTP Error:', errh)
+                
+                except requests.exceptions.ConnectionError as errc:
+                
+                    print('Connection Error:', errc)
+                    timeout = (15, 15) 
+                    continue
+                
+                except requests.exceptions.Timeout as errt:
+                    
+                    print('Timeout Error:', errt)
+                    timeout = (15, 15)
+                    continue  
+
+                except requests.exceptions.RequestException as err:
+                    
+                    print('Oops Something went wrong', err)
+
+                soup = BeautifulSoup(req.text, parser)
+
+            # post request
+            else:
+
+                try:
+                    req = requests.post(url, headers=headers, data=payload, timeout=timeout)
+                    req.raise_for_status()
+
+                
+                except requests.exceptions.HTTPError as errh:
+
+                    print('HTTP Error:', errh)
+                
+                except requests.exceptions.ConnectionError as errc:
+                
+                    print('Connection Error:', errc)
+                    timeout = (15, 15)  
+                    continue
+
+                except requests.exceptions.Timeout as errt:
+                    
+                    print('Timeout Error:', errt)
+                    timeout = (15, 15)
+                    continue  
+
+                except requests.exceptions.RequestException as err:
+                    
+                    print('Oops Something went wrong', err)
+
+                soup = BeautifulSoup(req.text, parser)
+                
+        if return_req_object == False:
+            return soup
+        if return_req_object == True:
+            return soup, req
 
     def get_links(self, url):
         """
@@ -91,6 +146,7 @@ class Crawler:
         """
         # get all the internal links of webpage
         try:
+
             for link in self.get_page(url, 'GET', self.site.headers[0]).find_all(self.site.ils_if[0], attrs=self.site.ils_if[-1]):
                 print("-"*20)
             
@@ -111,16 +167,17 @@ class Crawler:
 
         except AttributeError as e:
             print(e)
-            print("continuing")
+            print("Continuing")
 
 
-    def check_if_target(self, url, pattern=None, list=None, look_for_inst=False):
+    def check_if_target(self, url, pattern=None, look_for_inst=False):
         
         '''
         class utility to for determining whether a page url contains target information defined by the page_target parameters 
-        if look_for_inst is set to true, then the function will also require a list and pattern by default those are set to None
+        if look_for_inst is set to true, then the function will also return the instances of a target url from a list of internal links which can either be found with the get_links class function or loaded from a file and then assigned to the ils (internal links) variable of the crawler
         '''
-        # see if the page has a form all test_pages on this site have one
+
+        # check if the page is a target page 
         target_exists = self.get_page(url, 'GET', self.site.headers[0]).find(self.site.target_params[0], attrs= self.site.target_params[-1])
         
         # find and return target page link with number of instances in ils
@@ -129,7 +186,7 @@ class Crawler:
             # functionality for retrieving instances of the link
             if look_for_inst == True: 
 
-                inst = find_pattern_inst(pattern, list)
+                inst = find_pattern_inst(pattern, self.ils)
 
                 return (url, inst)
 
@@ -137,68 +194,124 @@ class Crawler:
                 return url
         else:
             return None
-            
        
-    def parse_tests_page(self):
+               
+    def parse_tests_site(self):
 
-        # loop through links
+        target_nums = 0
+        link_nums = 0
+        # loop through links in this case
         for link in self.ils:
 
             # determine target_page type
-            target = self.check_if_target(link, pattern=re.compile(rf'{link}.*'), list=test_crawler.ils, look_for_inst=True)
+            target = self.check_if_target(link, pattern=re.compile(rf'{link}.*'), look_for_inst=True)
 
             print("-"*100)
+
             if target != None:
 
-                print("Found target {}".format(target[0]))
-                print("Number of Instances {}".format(target[-1]))
+                # target url and num of instances
+                p_url = target[0]
+                p_nums = target[-1]
+
+                target_nums += 1
+                print("Found target {}".format(p_url))
+                print("Number of Instances {}".format(p_nums))
+                print("Number of Targets found {}".format(target_nums))
 
                 # retrieve questions page
-                q_page, req = self.get_page(target[0], 'GET', self.site.headers[0], return_req_object=True, parser='lxml')
+                q_page = self.get_page(p_url, 'GET', self.site.headers[0], parser='html.parser')
 
                 # retrieve answers page
                 self.site.headers[-1][-1]['quiz_id'] = retr_q_id(q_page.select('.quiz-form')[0])
-
-                ca_page = self.get_page(target, 'POST', self.site.headers[-1][0], parser='lxml', payload=self.site.headers[-1][-1])
+                
+                ca_page = self.get_page(self.site.post_link, 'POST', self.site.headers[-1][0], parser='lxml', payload=self.site.headers[-1][-1])
+        
                 
                 # get test type 
-                test_type = parse.urlparse(req.url).path.strip('/').split('/')[0]
+                test_type = parse.urlparse(p_url).path.strip('/').split('/')[0]
                 
                 # if test-category is level-test 
-                if test_type == 'level-test':
+                if test_type == 'listening':
                     
                     # assign scheme appropriate to test type
-                    self.site.tag_scheme = general_scheme
-                    scheme = self.site.tag_scheme
-                    
-                    content = parse_tests_content(q_page, ca_page, scheme)
-                    
-                
-                # if page is title is grammer-points do something
-                # elif page_type == 'grammar-points':
-                #     print('Page Type {}'.format(page_type))
-                
-                # if page is title is listening do something
-                # elif page_type == 'listening':
-                        # grab iframe source
-                        # strip the final characters after the '\#'
-                        # concatenate the substring to https://www.youtube.com/embed/-5iUfno6gPI
-                        # convert video to mp3 
-                        # store video 
-                #     print('Page Type {}'.format(page_type))
-                
-                # if page is title is reading do something
-                # elif page_type == 'reading':
-                #     print('Page Type {}'.format(page_type))
-                
-                # if page is title is writing do something
-                # elif page_type == 'writing':
-                #     print('Page Type {}'.format(page_type))
+                    self.site.tag_scheme = listening_scheme
 
+                    try:
+                        # parse content
+                        content = parse_tests_content(q_page, ca_page, self.site.tag_scheme)
+                    
+                        # retrieve audio
+                        audio_link = get_audio_link(q_page, self.site.tag_scheme)
+                        payload = {'search_txt': audio_link}
+                        post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
+                        ad_page = self.get_page(post_link, 'POST', self.site.headers[0], payload=payload, parser='lxml')
+                        d_links = ad_page.find_all('option')
+                        d_link = None
+                        for link in d_links:
+
+                            if link.get_text() == 'mp3\xa0128kps':
+                                d_link = 'https:' + link.attrs['data-link']
+
+                        content['audio'] = d_link
+                    
+                    except Exception as e:
+
+                        with open('logs.txt', 'a+') as logs:
+                            
+                            logs.write(p_url + '\n')
+                            logs.write('\n')
+                            logs.write('\t\t' + str(e) + '\n')
+                            logs.write('\n')
+
+                        print('Found Error Here')
+                        print("Continuing")
+                    
+                    # initialize an instant and store parsed info in this instance
+                    p_test = Listening(p_url, content['test_title'], content, 'No Folder Yet', p_nums) 
+                    p_test.show_parsed_items()
+
+                else: 
+
+                    # assign scheme
+                    self.site.tag_scheme = general_scheme
+ 
+                    try:
+
+                        # parse content
+                        content = parse_tests_content(q_page, ca_page, self.site.tag_scheme)
+                    
+                    except Exception as e:
+
+                        with open('logs.txt', 'a+') as logs:
+                            
+                            logs.write(p_url + '\n')
+                            logs.write('\n')
+                            logs.write('\t\t' + str(e) + '\n')
+                            logs.write('\n')
+
+                        print('Found Error Here')
+                        print("Continuing")
+
+
+
+                    # initialize content instance
+                    p_test = GT(p_url, content['test_title'], content, 'No folder name', p_nums)
+                    p_test.show_parsed_items()
                 
             else:
+
+                link_nums += 1
                 print("Target not found")
                 print("Continuing.........")
+                print("Number of links surfed {}".format(link_nums))
+        
+        
+        # write total links surfed and numbers surfed in logs
+        with open('logs.txt', 'a+') as logs:
+            
+            logs.write('Total num of links surfed {}, Total num of targets found {}'.format(link_nums, target_nums))
+
                 
 
 
@@ -209,7 +322,12 @@ if __name__ == "__main__":
     websites = [
         [
             "https://test-english.com/",
-            [{"User-Agent": "Mozilla/75.0"}, [{"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": ''}]],
+            [
+                {"User-Agent": "Mozilla/75.0"}, 
+                [
+                {"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": ''}
+                ]
+            ],
             '.header h1',
             ["a", {"href" : re.compile(r'(\?p=[0-9]*)|((https://)|(https://www\.))test-english\.com')}],
             ["form", {"class" : "quiz-form"}],
@@ -220,28 +338,6 @@ if __name__ == "__main__":
 
     # create website and crawler instance
     test = Tests(websites[0][0], websites[0][1], websites[0][2], websites[0][3], websites[0][4], websites[0][5])
-    test_crawler = Crawler(test)
+    test_crawler = Crawler(test, ils=True, folder_name='eng_test_links.txt')
     
-    # feed links to crawler  
-    test_crawler.ils = feed_crawler_links('eng_test_links.txt')
-    # test_crawler.parse_tests_page()
-
-
-    # # find target links in list
-    
-
-    #     print('-'*50)
-    #     if result != None:
-    #         print('Found test at --> {}'.format(result[0]))
-    #         if result[-1] > 1:
-    #             print('test concists of {} pages'.format(result[-1]))
-    #         else:
-    #             print('test concists of {} page'.format(result[-1]))
-    #     else:
-    #         print("Didn't find target at --> {}".format(link))
-    
-# when target found
-    # check test type (how do i find out test type, link title)
-        # run parse function  
-
-
+    test_crawler.parse_tests_site()

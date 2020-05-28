@@ -1,0 +1,56 @@
+https://test-english.com/grammar-points/b1-b2/present-perfect-simple-continuous/2/
+
+		'NoneType' object has no attribute 'select'
+
+https://test-english.com/grammar-points/b1/had-better-its-time/2/
+
+		list index out of range
+
+https://test-english.com/grammar-points/b2/clauses-contrast-purpose-reason-result/3/
+
+		list index out of range
+
+https://test-english.com/grammar-points/b1/had-better-its-time/2/
+
+		list index out of range
+
+https://test-english.com/grammar-points/b2/clauses-contrast-purpose-reason-result/3/
+
+		list index out of range
+
+https://test-english.com/grammar-points/b2/cleft-sentences/2/
+
+		list index out of range
+
+https://test-english.com/grammar-points/b1-b2/position-of-adverbs/3/
+
+		list index out of range
+
+https://test-english.com/writing/b1-b2/an-informal-email-advice/3/
+
+		list index out of range
+
+https://test-english.com/reading/b2/stay-fit-happy-healthy/
+
+		list index out of range
+
+https://test-english.com/reading/b1-b2/does-cannabis-cure-cancer/
+
+		list index out of range
+
+https://test-english.com/reading/b1/ig-nobel-prizes/
+
+		'NoneType' object has no attribute 'name'
+
+https://test-english.com/reading/a2/archaeologists-identify-mummy-lost-egyptian-queen/
+
+		list index out of range
+
+https://test-english.com/listening/b1-b2/interview-jonathan-franzen/
+
+		'NoneType' object has no attribute 'start'
+
+https://test-english.com/listening/b2/life-without-cell-phone/
+
+		'NoneType' object has no attribute 'start'
+

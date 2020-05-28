@@ -5,16 +5,44 @@ class Content:
     common base class for all content
     '''
 
-    def __init__(self, url, title, content, folder):
+    def __init__(self, url, title, content):
         self.url = url #string 
-        self.p_title = title # string 
-        self.test_content = content # information from content where content is a dictionary
+        self.title = title # string
+        self.body = content
 
 
-    def print(self):
+    def show_parsed_items(self):
         '''
-        printing function for content
+        Class utility for printing parsed content
         '''
+        
         print('URL: {}'.format(self.url)) 
-        print('Page Title: {}'.format(self.p_title)) 
-        print('Content: {}'.format(self.url)) 
+        print('Page Title: {}'.format(self.title)) 
+        print('Content: {}'.format(self.body)) 
+
+
+class GT(Content): # general test
+    '''
+    Subclass for content parsed from tests -> level-tests, grammer-points, use-of-english, writing
+    '''
+
+    def __init__(self, url, title, content, folder, p_nums):
+
+        Content.__init__(self, url, title, content)
+
+        self.folder = folder   # parsed folder path for downloading test content
+        self.p_nums = p_nums # instances of target link     
+
+class Listening(GT):
+
+    '''
+    Subclass for content parsed from listening tests
+    '''
+
+    def ___init__(self, url, title, content, folder, p_nums, audio_response):
+        
+        # initialize subclass GT
+        GT.__init__(self, url, title, content, folder, p_nums)
+
+        self.audio_response = audio_response # req response -> to use for storing 
+        
