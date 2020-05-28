@@ -13,12 +13,30 @@ class Content:
 
     def show_parsed_items(self):
         '''
+
         Class utility for printing parsed content
         '''
         
         print('URL: {}'.format(self.url)) 
         print('Page Title: {}'.format(self.title)) 
-        print('Content: {}'.format(self.body)) 
+        print('Content: {}'.format(self.body))
+
+   
+    def create_folder_path(self, link, dest):
+        '''
+
+        Utility function for creating a folder path which can be utilized to store data 
+        '''
+        pass
+
+    def write_parsed_content(self, folder_name, content):
+        '''
+        
+        Utility function for storing data into text files
+        '''
+        pass
+
+
 
 
 class GT(Content): # general test

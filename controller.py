@@ -197,15 +197,15 @@ class Crawler:
        
                
     def parse_tests_site(self):
-
+        # some variables for keeping track of links
         target_nums = 0
         link_nums = 0
+
         # loop through links in this case
         for link in self.ils:
 
             # determine target_page type
             target = self.check_if_target(link, pattern=re.compile(rf'{link}.*'), look_for_inst=True)
-
             print("-"*100)
 
             if target != None:
@@ -245,9 +245,12 @@ class Crawler:
                         audio_link = get_audio_link(q_page, self.site.tag_scheme)
                         payload = {'search_txt': audio_link}
                         post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
+
                         ad_page = self.get_page(post_link, 'POST', self.site.headers[0], payload=payload, parser='lxml')
+
                         d_links = ad_page.find_all('option')
                         d_link = None
+
                         for link in d_links:
 
                             if link.get_text() == 'mp3\xa0128kps':
@@ -292,8 +295,6 @@ class Crawler:
 
                         print('Found Error Here')
                         print("Continuing")
-
-
 
                     # initialize content instance
                     p_test = GT(p_url, content['test_title'], content, 'No folder name', p_nums)

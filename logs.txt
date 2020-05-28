@@ -54,3 +54,43 @@ https://test-english.com/listening/b2/life-without-cell-phone/
 
 		'NoneType' object has no attribute 'start'
 
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
+https://test-english.com?p=6251
+
+		object of type 'NoneType' has no len()
+
