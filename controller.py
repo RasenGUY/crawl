@@ -58,6 +58,7 @@ class Crawler:
     """
     def __init__(self, site, ils=False, folder_name=None):
         self.site = site
+        self.surfed_ils = set()
         
         if ils == False:
             self.ils = set()
@@ -200,6 +201,7 @@ class Crawler:
         # some variables for keeping track of links
         target_nums = 0
         link_nums = 0
+        home = '/home/raguy92/downloads/' 
 
         # loop through links in this case
         for link in self.ils:
@@ -219,6 +221,13 @@ class Crawler:
                 print("Number of Instances {}".format(p_nums))
                 print("Number of Targets found {}".format(target_nums))
 
+                if p_nums > 0 or test_type == 'level-test':
+
+                    if test_type == 'level-test':
+                        p_nums = 1
+                    
+                    for instance in range(0, p_nums) 
+
                 # retrieve questions page
                 q_page = self.get_page(p_url, 'GET', self.site.headers[0], parser='html.parser')
 
@@ -226,11 +235,11 @@ class Crawler:
                 self.site.headers[-1][-1]['quiz_id'] = retr_q_id(q_page.select('.quiz-form')[0])
                 
                 ca_page = self.get_page(self.site.post_link, 'POST', self.site.headers[-1][0], parser='lxml', payload=self.site.headers[-1][-1])
-        
-                
+    
                 # get test type 
-                test_type = parse.urlparse(p_url).path.strip('/').split('/')[0]
-                
+                link_p = parse.urlparse(p_url).path.strip('/')
+                test_type = link_p.split('/')[0] 
+
                 # if test-category is level-test 
                 if test_type == 'listening':
                     
@@ -253,7 +262,7 @@ class Crawler:
 
                         for link in d_links:
 
-                            if link.get_text() == 'mp3\xa0128kps':
+                            if link.get_text() == 'mp3\xa0128kbps':
                                 d_link = 'https:' + link.attrs['data-link']
 
                         content['audio'] = d_link
@@ -271,8 +280,11 @@ class Crawler:
                         print("Continuing")
                     
                     # initialize an instant and store parsed info in this instance
-                    p_test = Listening(p_url, content['test_title'], content, 'No Folder Yet', p_nums) 
+                    p_test = Listening(p_url, content['test_title'], content)
                     p_test.show_parsed_items()
+                    
+                    # create folder path 
+                    f_path = p_test.create_folder_path(link_p, home)
 
                 else: 
 
@@ -280,7 +292,6 @@ class Crawler:
                     self.site.tag_scheme = general_scheme
  
                     try:
-
                         # parse content
                         content = parse_tests_content(q_page, ca_page, self.site.tag_scheme)
                     
@@ -297,8 +308,11 @@ class Crawler:
                         print("Continuing")
 
                     # initialize content instance
-                    p_test = GT(p_url, content['test_title'], content, 'No folder name', p_nums)
+                    p_test = Content(p_url, content['test_title'], content)
                     p_test.show_parsed_items()
+
+                    # create folder path 
+                    f_path = p_test.create_folder_path(link_p, home)
                 
             else:
 

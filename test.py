@@ -1,9 +1,11 @@
+
 from bs4 import BeautifulSoup
 import requests
 from tests_parser import *
 from helpers import *
 import re
 from schemes import *
+
 
 # Links to extract
     # test with textbox 
@@ -42,7 +44,6 @@ from schemes import *
 
 # https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/2/
 # https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/3/
-
 # special pages
     # writing (special cases)(done)
         # https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/2/
@@ -62,83 +63,51 @@ from schemes import *
         #     
 
 
-headers = [
-    {"User-Agent": "Mozilla/75.0"}, 
-    [
-        {"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}
-    ]
-] 
+# headers = [
+#     {"User-Agent": "Mozilla/75.0"}, 
+#     [
+#         {"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}
+#     ]
+# ] 
 
-req = requests.get('https://test-english.com/listening/b1/500-year-old-paintings-raphael-found/', headers=headers[0])
+# req = requests.get('https://test-english.com/listening/b1/500-year-old-paintings-raphael-found/', headers=headers[0])
 
-q_page = BeautifulSoup(req.text, 'html.parser')
+# q_page = BeautifulSoup(req.text, 'html.parser')
 
-# get quiz id
-q_id = retr_q_id(q_page.select('.quiz-form')[0])
-headers[-1][-1]['quiz_id'] = q_id
-payload = headers[-1][-1]
-
-
-post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
-req = requests.post(post_link, data=payload, headers=headers[0])
-
-ca_page = BeautifulSoup(req.text, 'lxml')
-
-content = parse_tests_content(q_page, ca_page, general_scheme)
-# print(content)
+# # get quiz id
+# q_id = retr_q_id(q_page.select('.quiz-form')[0])
+# headers[-1][-1]['quiz_id'] = q_id
+# payload = headers[-1][-1]
 
 
-post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
-audio_link = get_audio_link(q_page, listening_scheme)
+# post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+# req = requests.post(post_link, data=payload, headers=headers[0])
 
-payload = {'search_txt': audio_link}
+# ca_page = BeautifulSoup(req.text, 'lxml')
 
-hdrs = {'User-Agent': 'Mozilla/75.0'}
-req = requests.post(post_link, data=payload, headers=headers[-1][0])
+# content = parse_tests_content(q_page, ca_page, general_scheme)
+# # print(content)
 
-ad_page = BeautifulSoup(req.text, 'lxml')
+
+# post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
+# audio_link = get_audio_link(q_page, listening_scheme)
+
+# payload = {'search_txt': audio_link}
+
+# hdrs = {'User-Agent': 'Mozilla/75.0'}
+# req = requests.post(post_link, data=payload, headers=headers[-1][0])
+
+# ad_page = BeautifulSoup(req.text, 'lxml')
  
-d_links = ad_page.find_all('option')
-d_link = None
+# d_links = ad_page.find_all('option')
+# d_link = None
 
-for link in d_links:
+# for link in d_links:
     
-    if  link.get_text() == 'mp3\xa0128kbps':
-        d_link = 'https:' + link.attrs['data-link']
+#     if  link.get_text() == 'mp3\xa0128kbps':
+#         d_link = 'https:' + link.attrs['data-link']
 
-print(d_link)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# print(d_link)
 
 
 # print(len(page.select('.quiz-form .watu-question')))
@@ -162,6 +131,7 @@ print(d_link)
 #         print('\t {} {}'.format(o_num, o_body))
     
 #     print()
-
-
+ils = feed_crawler_links('eng_test_links.txt')
+ins = find_pattern_inst(re.compile(rf'https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/4.*'), ils)
+print(ins)
 

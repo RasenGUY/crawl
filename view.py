@@ -22,45 +22,47 @@ class Content:
         print('Content: {}'.format(self.body))
 
    
-    def create_folder_path(self, link, dest):
+    def create_folder_path(self, link_p, home):
         '''
 
-        Utility function for creating a folder path which can be utilized to store data 
+        Utility function for creating a folder path which can be utilized to store data
+        returns a directory path, the home variable is refers to the home directory used for storing the tests if no home directory is given, home variable will take on the home path of the users machine
         '''
-        pass
+        
+        if home == None:
+            home = os.environ['HOME']
+        
+        if link_p[-1].isdigit() == True:
+        
+            folder_path = home + link_p[:len(link_p)-1]
+        
+        else:
+            
+            if link_p[-1] != '/':
+                folder_path = home + link_p + '/'
+            else:
+                folder_path = home + link_p
+        
+        return folder_path
+        
 
-    def write_parsed_content(self, folder_name, content):
+    def write_parsed_content(self, folder_path, content):
         '''
         
         Utility function for storing data into text files
         '''
         pass
 
-
-
-
-class GT(Content): # general test
-    '''
-    Subclass for content parsed from tests -> level-tests, grammer-points, use-of-english, writing
-    '''
-
-    def __init__(self, url, title, content, folder, p_nums):
-
-        Content.__init__(self, url, title, content)
-
-        self.folder = folder   # parsed folder path for downloading test content
-        self.p_nums = p_nums # instances of target link     
-
-class Listening(GT):
+class Listening(Content):
 
     '''
     Subclass for content parsed from listening tests
     '''
 
-    def ___init__(self, url, title, content, folder, p_nums, audio_response):
+    def ___init__(self, url, title, content, audio_response):
         
         # initialize subclass GT
-        GT.__init__(self, url, title, content, folder, p_nums)
+        Content.__init__(self, url, title, content)
 
         self.audio_response = audio_response # req response -> to use for storing 
         
