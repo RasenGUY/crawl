@@ -119,7 +119,14 @@ def parse_tests_content(q_page, ca_page, scheme):
             c = None
             if key == 'questions':
                 
-                c = questions
+                if q_struct[0] == 'dialogue':
+
+                    c = (None, questions[-1])
+                
+                else: 
+                    
+                    c = questions
+
 
             elif key == 'c_answers':
 
@@ -151,18 +158,24 @@ def parse_tests_content(q_page, ca_page, scheme):
 
         # get top part of the test 
         elif key == 'passage':
-            
-            passage = get_passage(q_page, scheme)
 
-            if len(passage) != 0:
-
-                content[key] = passage
+            if q_struct[0] == 'dialogue' and a_struct[0] == 'gap_options':
+                                
+                content[key] = questions[0]
             
             else:
 
-                content[key] = None
+                passage = get_passage(q_page, scheme)
 
-                continue
+                if len(passage) != 0:
+
+                    content[key] = passage
+                
+                else:
+
+                    content[key] = None
+
+                    continue
         
         # get q_structs 
         elif key == 'q_struct':
