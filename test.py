@@ -70,7 +70,7 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/writing/b1-b2/narrative-writing-step-by-step/2/', headers=headers[0])
+req = requests.get('https://test-english.com/listening/b1-b2/actors-talk-acting/', headers=headers[0])
 
 q_page = BeautifulSoup(req.text, 'html.parser')
 
@@ -202,54 +202,82 @@ for key in content.keys():
 # write parsed answers
 print('\n'*2)
 
-# for key in content.keys():
+for key in content.keys():
 
-#     if key == 'c_answers':
+    if key == 'c_answers':
 
-#         if content['ca_fb_sct'] == 'ca_multiple_bullets_wf':
+        if content['ca_fb_sct'] == 'ca_multiple_bullets_wf':
 
-#             counter = 0
-#             for c_answer in content[key][0]:
-
-#                 c_a = str(counter + 1) + '. ' + c_answer
-                
-#                 print(c_a)
-                
-#                 # print(feedback)
-#                 for line in content[key][-1][counter]:
-
-#                     print('\t' + line)
-                
-#                 print('\n')
-#                 counter += 1 
-        
-#         elif content['ca_fb_sct'] == 'ca_multiple_normal':
+            counter = 0
+            # store single answers 
             
-#             counter = 0
-#             # print correct answers wf
-#             for line in content[key][0]:
-                
-                
-#                 if line[0:1] == '\n':
+            for c_answer in content[key][0]:
 
-#                     print(str(counter+1) + '. ' + line[1:-1])
-                
-#                 else:
-#                     print(str(counter+1) + '. ' + line)
-                
-#                 if line[-1:-2] != '\n':
+                # store multiple correct answers  with feedback multiple
+                if isinstance(content[key][-1][0], list) != True:
                     
-#                     print('\n')
+                    c_a = ''
+                    if isinstance(c_answer, list):
+                    
+                        for answer in c_answer:
+                                
+                            c_a += answer[3:len(answer)] + ', '
 
-#                 counter += 1
+                    else:
+
+                        c_a = c_answer[3:len(c_answer)] 
+                    
+                    print(str(counter + 1) + '. ' + c_a) 
+                            
+                # store single correct answers 
+                else:
+
+                    c_a = str(counter + 1) + '. ' + c_answer
+                    
+                    print(c_a)
+                
+                # write if feedback is a list
+                if isinstance(content[key][-1][counter], list):
+                    
+                    for line in content[key][-1][counter]:
+
+                        print('\t' + line)
+                
+                # write feedback is not list   
+                else: 
+
+                    print('\t' + content[key][-1][counter])
+
+                print('\n')
+                
+                counter += 1
+            
         
+        elif content['ca_fb_sct'] == 'ca_multiple_normal':
+            
+            counter = 0
+            # print correct answers wf
+            for line in content[key][0]:
+                
+                
+                if line[0:1] == '\n':
 
+                    print(str(counter+1) + '. ' + line[1:-1])
+                
+                else:
+                    print(str(counter+1) + '. ' + line)
+                
+                if line[-1:-2] != '\n':
+                    
+                    print('\n')
 
-#     elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+                counter += 1
+        
+    elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
 
-#         if content[key] != None: 
+        if content[key] != None: 
 
-#             print(key + ': ' + content[key], end='\n')
-#             print('\n')
+            print(key + ': ' + content[key], end='\n')
+            print('\n')
             
 print(content)
