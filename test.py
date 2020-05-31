@@ -63,30 +63,32 @@ from schemes import *
         #     
 
 
-# headers = [
-#     {"User-Agent": "Mozilla/75.0"}, 
-#     [
-#         {"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}
-#     ]
-# ] 
+headers = [
+    {"User-Agent": "Mozilla/75.0"}, 
+    [
+        {"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}
+    ]
+] 
 
-# req = requests.get('https://test-english.com/listening/b1/500-year-old-paintings-raphael-found/', headers=headers[0])
+req = requests.get('https://test-english.com/writing/b1-b2/narrative-writing-step-by-step/2/', headers=headers[0])
 
-# q_page = BeautifulSoup(req.text, 'html.parser')
-
-# # get quiz id
-# q_id = retr_q_id(q_page.select('.quiz-form')[0])
-# headers[-1][-1]['quiz_id'] = q_id
-# payload = headers[-1][-1]
+q_page = BeautifulSoup(req.text, 'html.parser')
 
 
-# post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
-# req = requests.post(post_link, data=payload, headers=headers[0])
+# get quiz id
+q_id = retr_q_id(q_page.select('.quiz-form')[0])
+headers[-1][-1]['quiz_id'] = q_id
+payload = headers[-1][-1]
 
-# ca_page = BeautifulSoup(req.text, 'lxml')
 
-# content = parse_tests_content(q_page, ca_page, general_scheme)
-# # print(content)
+post_link = 'https://test-english.com/staging01/wp-admin/admin-ajax.php'
+req = requests.post(post_link, data=payload, headers=headers[0])
+
+ca_page = BeautifulSoup(req.text, 'lxml')
+
+content = parse_tests_content(q_page, ca_page, general_scheme)
+# print(content['passage'])
+
 
 
 # post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
@@ -131,7 +133,123 @@ from schemes import *
 #         print('\t {} {}'.format(o_num, o_body))
     
 #     print()
-ils = feed_crawler_links('eng_test_links.txt')
-ins = find_pattern_inst(re.compile(rf'https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/4.*'), ils)
-print(ins)
+# ils = feed_crawler_links('eng_test_links.txt')
+# ins = find_pattern_inst(re.compile(rf'https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/4.*'), ils)
+# print(ins)
 
+# write parsed questions
+print('\n'*2)
+for key in content.keys():
+
+    # handle passage
+    if key == 'passage':
+
+        if isinstance(content[key], list):
+            
+            for line in content[key]: 
+                
+                if line == '\n':
+                    pass 
+                elif line == '':
+                    pass
+                else:
+                    print(line, end='\n')
+
+            print('\n')
+    
+    # handle questions
+    elif key == 'questions':
+
+        counter = 0
+        for question in content[key][0]:
+
+            print(str(counter+1)+ '. ' + question, end='\n')
+            
+            # if questions multiple choice 
+            if len(content[key][-1]) != 0:
+                
+                p_as = content[key][-1][counter] 
+                for i in range(len(p_as)): 
+                    
+                    if isinstance(p_as, list):
+                        
+                        p_a = chr(ord('A') + i) + '. ' + p_as[i]
+                        
+                        print('\t' + p_a, end='\n')
+                
+                    else:
+
+                        print(p_as)
+                
+                print('\n')
+        
+            print('\n')
+            
+            counter+= 1
+    
+    elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+
+        if content[key] != None: 
+
+            print(key + ': ' + content[key], end='\n')
+            print('\n')
+    
+    # pass parsed answers
+    else:
+
+        pass
+
+# write parsed answers
+print('\n'*2)
+
+# for key in content.keys():
+
+#     if key == 'c_answers':
+
+#         if content['ca_fb_sct'] == 'ca_multiple_bullets_wf':
+
+#             counter = 0
+#             for c_answer in content[key][0]:
+
+#                 c_a = str(counter + 1) + '. ' + c_answer
+                
+#                 print(c_a)
+                
+#                 # print(feedback)
+#                 for line in content[key][-1][counter]:
+
+#                     print('\t' + line)
+                
+#                 print('\n')
+#                 counter += 1 
+        
+#         elif content['ca_fb_sct'] == 'ca_multiple_normal':
+            
+#             counter = 0
+#             # print correct answers wf
+#             for line in content[key][0]:
+                
+                
+#                 if line[0:1] == '\n':
+
+#                     print(str(counter+1) + '. ' + line[1:-1])
+                
+#                 else:
+#                     print(str(counter+1) + '. ' + line)
+                
+#                 if line[-1:-2] != '\n':
+                    
+#                     print('\n')
+
+#                 counter += 1
+        
+
+
+#     elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+
+#         if content[key] != None: 
+
+#             print(key + ': ' + content[key], end='\n')
+#             print('\n')
+            
+print(content)

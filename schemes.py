@@ -10,15 +10,18 @@ g_quest_sel = '.quiz-form .watu-question'
 q_selectors = [('.question-content input.watupro-gap', 'gap_option'), ('.question-content select.watupro-gap option', 'gap_options'), ('.question-choices', 'multiple_c')] # for defining q page structs
 expl_sel = '#explanation h2, #explanation h3, #explanation h4, #explanation p, #explanation ul, #explanation img'
 
-# ---------------- Test Pages ----------
+# ----------------- Test-Pages --------------------
 
 # general tag scheme -> level-test, grammer test, reading scheme, use of english 
 general_scheme = {
+
+    'q_struct' : None,
+    'ca_fb_sct' : None,
     'test_title' : 'header h1', # test-title
     'sub_title' : '#exercises h3', # test subtitle 
     'instructions' : '#exercises h5', #instructions for the test
-    'text_box' : '.textBox', # if there is a textbox 
-    'passage' : None,
+    'words' : '.textBox', # if there is a textbox 
+    'passage' : '#exercises > p',
     'questions' : [g_quest_sel, q_selectors],
     'c_answers': None,
     'expl' : expl_sel

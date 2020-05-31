@@ -221,15 +221,8 @@ class Crawler:
                 print("Number of Instances {}".format(p_nums))
                 print("Number of Targets found {}".format(target_nums))
 
-                if p_nums > 0 or test_type == 'level-test':
-
-                    if test_type == 'level-test':
-                        p_nums = 1
-                    
-                    for instance in range(0, p_nums) 
-
                 # retrieve questions page
-                q_page = self.get_page(p_url, 'GET', self.site.headers[0], parser='html.parser')
+                q_page, req = self.get_page(p_url, 'GET', self.site.headers[0], parser='html.parser', return_req_object=True)
 
                 # retrieve answers page
                 self.site.headers[-1][-1]['quiz_id'] = retr_q_id(q_page.select('.quiz-form')[0])
@@ -237,8 +230,11 @@ class Crawler:
                 ca_page = self.get_page(self.site.post_link, 'POST', self.site.headers[-1][0], parser='lxml', payload=self.site.headers[-1][-1])
     
                 # get test type 
-                link_p = parse.urlparse(p_url).path.strip('/')
+                link_p = parse.urlparse(req.url).path.strip('/')
                 test_type = link_p.split('/')[0] 
+
+                # if test_type == 'level-test':
+                #     link_p = 'level-test/'
 
                 # if test-category is level-test 
                 if test_type == 'listening':
@@ -285,6 +281,7 @@ class Crawler:
                     
                     # create folder path 
                     f_path = p_test.create_folder_path(link_p, home)
+                    print(f_path)
 
                 else: 
 
@@ -313,6 +310,7 @@ class Crawler:
 
                     # create folder path 
                     f_path = p_test.create_folder_path(link_p, home)
+                    print(f_path)
                 
             else:
 

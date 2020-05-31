@@ -46,12 +46,12 @@ class Content:
         return folder_path
         
 
-    def write_parsed_content(self, folder_path, content):
+    def write_parsed_questions(self, folder_path, content):
         '''
         
         Utility function for storing data into text files
         '''
-        pass
+        
 
 class Listening(Content):
 

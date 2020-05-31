@@ -23,6 +23,7 @@ def find_pattern_inst(pattern, list):
     # find instances of pattern in given list and return it
     return len([list_item for list_item in list if pattern.match(list_item)])
 
+
 def rem_soup_ins_re(targets, soup, repl_str, parser='lxml'):
     '''
     helper function for removing target instances in a list from a bsoup string utilizing the targets as the pattern instances
@@ -313,6 +314,7 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
             
             # remove number from questions
             if len(question.select('.watupro_num')) > 0:  
+                
                 question.select('.watupro_num')[0].clear()
 
             # ----------------- parse form  questions and answers -------------------
@@ -465,7 +467,7 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
                     parsed_a.append([answer.get_text().replace('\xa0', ' ').strip() for answer in text.select(a_tag)])
     
     # return parsed content
-    return (parsed_q, parsed_a, q_number)
+    return (parsed_q, parsed_a)
 
 def parse_tests_answers(q_struct, page, ca_sct, ca_fb_sct):
 

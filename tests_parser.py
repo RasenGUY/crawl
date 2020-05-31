@@ -1,37 +1,66 @@
 from helpers import parse_tests_questions, parse_tests_answers, find_a_struct, find_q_struct, find_ca_feedback_struct, find_ca_struct, parse_tests_expls
 import re
+from bs4 import Tag, NavigableString, BeautifulSoup
+
 
 def get_passage(page, scheme):
     '''
-    parser function for retrieving the test material (i.e. texts, passeges) required for completing the test
+
+    Parser function for retrieving the test material (i.e. texts, passeges) required for completing the test
     '''
 
-    # get text material
-    element = page.select(scheme['instructions'])[0]
-    bs4_element = type(element)
+    # get text material    
     passage = list()
+    element = page.select_one(scheme['instructions']).next_sibling
 
-    while element.name != 'div':
+    while True:
 
-        element = element.next_sibling
-        
-        if element.name == 'div':
-            break
-        
-        else:
+        # store navigable strings
+        if isinstance(element, NavigableString):
 
-            # store navigable strings
-            if type(element) != bs4_element: 
+            if element.string == '\n' or element.string == '':
                 
+                pass
+
+            else:
+
                 passage.append(element.string) 
 
-            # store normal tags
-            else: 
-                
-                if element.get_text() != '\xa0' or element.get_text() != '':
+        # store normal tags
+        elif isinstance(element, Tag):
 
-                    passage.append(element.get_text().replace('\xa0', ' ').strip())
+
+            # check if malformed tag with 'div'
+            str_tag = str(element)
+            pattern = re.compile(r'<div.+')
+            
+            # if the tag is malformed and contains the form in it, remove
+            if pattern.search(str_tag) != None: 
+                
+                match = pattern.search(str_tag)
+                
+                # create new bs element  
+                n_element = str_tag.replace(str_tag[match.start():match.end()], '</' + str(element.name) + '>')
+                n_soup = BeautifulSoup(n_element, 'html.parser').p
+                
+                # append altered text of element to passage
+                passage.append(n_soup.get_text())
+                element = element.next_sibling
+                continue
+            
+            if element.get_text() == '\xa0' or element.get_text() == '' or element.get_text() == '\n': 
+                pass
+
+            else:
+                
+                passage.append(element.get_text().replace('\xa0', ' ').strip())
+                
         
+        if element.next_sibling.name == 'div':
+            break
+        else: 
+            element = element.next_sibling        
+    
     return passage
     
 def parse_tests_content(q_page, ca_page, scheme):
@@ -70,10 +99,10 @@ def parse_tests_content(q_page, ca_page, scheme):
     # parse headers and store already parsed data into a dictionary
     for key in scheme.keys():
 
-        # store text_box
-        if key == 'text_box':
+        # store words
+        if key == 'words':
             
-            if len(q_page.select(scheme['text_box'])) != 0:
+            if len(q_page.select(scheme['words'])) != 0:
 
                 content[key] = q_page.select(scheme[key])[0].get_text().replace('\xa0', ' ').strip()
                 q_page.select(scheme[key])[0].clear()
@@ -134,6 +163,16 @@ def parse_tests_content(q_page, ca_page, scheme):
                 content[key] = None
 
                 continue
+        
+        # get q_structs 
+        elif key == 'q_struct':
+
+            content[key] = q_struct[0]
+            
+        # get q_structs
+        elif key == 'ca_fb_sct':
+
+            content[key] = ca_fb_sct[0]
         
         # parse content according to scheme 
         else:
