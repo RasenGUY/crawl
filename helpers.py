@@ -1,5 +1,6 @@
 import re
 from bs4 import BeautifulSoup, Tag, NavigableString
+import os
 
 def feed_crawler_links(file):
     '''
@@ -647,10 +648,390 @@ def parse_tests_expls(page, selector):
            
     return parsed_expls
 
-        
-        
 
-
-
+def write_questions(f_path, f, content):
     
-     
+    '''
+    Helper function for writing parsed question to a file, given a folder path
+    '''
+    # create a new file
+    # with open(f_path + f, 'x') as test:
+    #     test.close()
+
+    # write to file
+    f_path = f_path + f
+    
+    # create file
+    with open(f_path, 'a+') as test:
+
+        test.write('\n'*2)
+        test.write("Test: {}".format(content['test_title']))
+        test.write('\n')
+
+        for key in content.keys():
+
+            # handle passage
+            if key == 'passage':
+                
+                if content['q_struct'] == 'dialogue' and content[key] != None:
+                    
+                    counter = 0 
+                    for question in content[key]:
+
+                        if counter+1 != len(content[key]):
+                            
+                            # new line if Dialogue substring
+                            if question.rfind('Dialogue') != -1 or content[key][counter+1].rfind('Dialogue') != -1:
+                                
+                                test.write(question + '\n')
+                            
+                            else:
+
+                                test.write(question)
+                        else:
+
+                            test.write(question)
+
+                        counter += 1
+
+                    test.write('\n')
+
+                else:
+
+                    if isinstance(content[key], list):
+                        
+                        counter = 0
+                        for line in content[key]: 
+                            
+                            if line == '\n':
+                                pass 
+                            elif line == '':
+                                pass
+                            
+                            else:
+                                test.write(line + '\n')
+                            
+                            # print every two lines
+                            if counter % 2 == 0: 
+                                test.write('\n')
+                        
+                            # increment counter with one
+                            counter+= 1
+
+                        test.write('\n')
+                        
+            # handle questions
+            elif key == 'questions':
+                
+                # write answers of options
+                if content['q_struct'] == 'dialogue':
+
+                    if content[key][-1] != None: 
+                    
+                        d_counter = 0
+                        a_counter = 0
+                        
+                        # loop through dialogue
+                        for dialogue in content[key][-1]:
+
+                            # loop through p_answers
+                            for p_as in dialogue:
+
+                                a_counter += 1
+                                
+                                test.write(str(a_counter) + '. ' + '_'*10 + '\n')
+
+                                for i in range(len(p_as)):
+                                    
+                                    p_a = '\t' + chr(ord('a') + i) + '.' + p_as[i]
+                                    
+                                    test.write(p_a)
+                                
+                                test.write('\n')
+                                
+                            d_counter += 1
+                    else:
+
+                        pass  
+
+
+                elif content['q_struct'] == 'form':
+                
+                    counter = 0
+                    for question in content[key][0]:
+                
+                        test.write(str(counter+1)+ '. ' + question + '\n')
+                        
+                        # if questions multiple choice 
+                        if len(content[key][-1]) != 0:
+                            
+                            p_as = content[key][-1][counter] 
+                            for i in range(len(p_as)): 
+                                
+                                if isinstance(p_as, list):
+                                    
+                                    p_a = chr(ord('a') + i) + '. ' + p_as[i]
+                                    
+                                    test.write('\t' + p_a + '\n')
+                            
+                                else:
+
+                                    test.write(p_as)
+                        else:
+
+                            pass
+                    
+                    test.write('\n')
+                    
+                    counter+= 1
+
+                # handle texts                      
+                elif content['q_struct'] == 'text' or content['q_struct'] == 'special': 
+                    
+                    for paragraph in content[key][0]:
+
+                        test.write(paragraph)
+                    
+                    test.write('\n')
+
+                    if len(content[key][-1]) > 0:
+                        
+                        a_counter = 0
+                        for p_as in content[key][-1]:
+
+                            if isinstance(p_as, list):
+
+                                for i in range(len(p_as)):
+
+                                    p_a = p_as[i]
+                                    
+                                    test.write(str(a_counter+1) + '. ' + '_'*10)
+
+                                    for j in range(len(p_a)):
+                                        
+                                        test.write('\t' + chr(ord('a') + j) + '.' + p_a[j])
+                                    
+                                    test.write('\n')
+
+                                    a_counter += 1
+                            else:
+                                
+                                test.write('\t' + str(a_counter+1) + '. ' + p_as)
+                                a_counter += 1        
+                    else:
+
+                        pass
+                    
+
+            elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+
+                # don't print test title
+                if key == 'test_title':
+
+                    pass
+
+                # print sub title instructions and text_box
+                elif content[key] != None: 
+
+                    test.write(key + ': ' + content[key] + '\n')
+                    test.write('\n')
+
+            # pass parsed answers
+            else:
+
+                pass
+
+
+def write_answers(f_path, f, content):
+    
+    '''
+    Helper function for writing parsed question to a file, given a folder path
+    '''
+
+    # create a new file
+    # with open(f_path + f, 'x') as test:
+    #     test.close()
+    
+    # write to file
+    f_path = f_path + f
+
+    # create file
+    with open(f_path, 'a+') as test:
+
+        # write parsed answers
+        test.write('\n'*2)
+        test.write("Answers for the test: {}".format(content['test_title']))
+        test.write('\n')
+
+        # loop through keys
+        for key in content.keys():
+
+            if key == 'c_answers':
+                
+                counter = 0
+                for c_answer in content[key][0]:
+
+                    if content['q_struct'] == 'dialogue':        
+
+                        # print each line in dialogue
+                        for line in c_answer:
+
+                            if line[0:2].isdigit():
+                            
+                                test.write('{}.{}'.format(line[0:2], line[2:len(line)]))
+                            
+                            elif line[0].isdigit():
+                                
+                                test.write('{}.{}'.format(line[0], line[1:len(line)]))
+                            
+                            else:
+
+                                test.write(line)
+
+                    # store single answers 
+                    elif content['ca_fb_sct'] == 'ca_multiple_bullets_wf':
+
+                        # store multiple correct answers  with feedback multiple
+                        if isinstance(content[key][-1][0], list) != True:
+                            
+                            c_a = ''
+                            if isinstance(c_answer, list):
+                            
+                                for answer in c_answer:
+                                        
+                                    c_a += answer[3:len(answer)] + ', '
+
+                            else:
+
+                                c_a = c_answer[3:len(c_answer)] 
+                            
+                            test.write(str(counter + 1) + '. ' + c_a) 
+                                    
+                        # store single correct answers 
+                        else:
+
+                            c_a = str(counter + 1) + '. ' + c_answer
+                            
+                            test.write(c_a)
+                        
+                                        
+                        # write if feedback is a list
+                        if isinstance(content[key][-1][counter], list):
+                            
+                            for line in content[key][-1][counter]:
+
+                                test.write('\t' + line)
+                        
+                        # write feedback is not list   
+                        else: 
+
+                            test.write('\t' + content[key][-1][counter])
+
+                        test.write('\n')
+
+                        counter += 1
+                                
+                
+                    elif content['ca_fb_sct'] == 'ca_multiple_normal':
+                        
+                        if c_answer[0:1] == '\n':
+
+                            test.write(str(counter+1) + '. ' + c_answer[1:-1])
+                        
+                        else:
+                            test.write(str(counter+1) + '. ' + c_answer)
+                        
+                        if c_answer[-1] != '\n':
+                            
+                            test.write('\n')
+                        
+                        counter+= 1
+                    
+                    elif content['ca_fb_sct'] == 'ca_multiple_bullets_wof':
+                        
+                        if c_answer[-1] == '\n':
+
+                            test.write(str(counter + 1) + '. '+ c_answer)
+
+                        else:
+                            
+                            test.write(str(counter + 1) + '. '+ c_answer + '\n')
+
+                        counter += 1
+                    
+                    elif content['ca_fb_sct'] == 'ca_single':
+
+                        p_a = c_answer
+
+                        test.write(p_a)
+
+                    elif content['ca_fb_sct'] == 'ca_single_bullets':
+
+                        for num in range(len(content[key][0])):
+                            
+                            test.write('Question {}.'.format(num+1))
+                            
+                            for answer in content[key][0][num]:
+
+                                test.write('\t' + answer + '\n')
+                    
+            elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+
+                # don't print test title
+                if key == 'test_title':
+
+                    pass
+
+                # print sub title instructions and text_box
+                elif content[key] != None: 
+
+                    test.write(key + ': ' + content[key] + '\n')
+                    test.write('\n')
+            else:
+                pass
+
+
+def write_explanations(f_path, f, content):
+    
+    '''
+
+    Helper function for writing parsed question to a file, given a folder path
+    '''
+    # create file
+    # with open(f_path + f, 'x') as test:
+    #     test.close()
+    
+    # write to file 
+    f_path = f_path + f
+
+    # create file    
+    with open(f_path, 'a+') as test:
+
+        test.write('\n'*2)
+        test.write("Explanations for the test: {}".format(content['test_title']))
+        test.write('\n')
+
+        expl = False
+
+        for key in content.keys():
+            
+            if key == 'expl':
+
+                expl = True
+
+        if expl == True:
+
+            for line in content['expl']:
+
+                
+                if isinstance(line, list):
+                    
+                    test.write(line[0], line[-1], '\n') 
+                
+                else:
+                    
+                    test.write(line)
+
+        else: 
+
+            test.write("No Explanations")
