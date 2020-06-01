@@ -159,8 +159,8 @@ def parse_tests_content(q_page, ca_page, scheme):
         # get top part of the test 
         elif key == 'passage':
 
-            if q_struct[0] == 'dialogue' and a_struct[0] == 'gap_options':
-                                
+            if q_struct[0] == 'dialogue':
+                    
                 content[key] = questions[0]
             
             else:

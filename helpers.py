@@ -165,6 +165,7 @@ def find_a_struct(q_struct, sels, q_sel, page):
         return (a_struct, a_tag)
     
     else:
+        
         return ('no struct tag', 'no answer tag')
 
 def find_ca_struct(q_struct, page):
@@ -437,6 +438,15 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
 
                     else:
                         parsed_q.append(paragraph.get_text().strip())
+                
+                if (q_struct[0] == 'text' and a_struct[0] == 'no struct tag'):
+
+                    a_tag = '.watupro-question-choice label'
+
+                    # parse answers
+                    for p_a in text.select(a_tag):
+                            
+                        parsed_a.append(p_a.get_text().replace('\xa0', ' ').strip())
                     
             else:
                 
@@ -458,13 +468,13 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
 
                             parsed_q.append(line.get_text().strip())
 
-                # handle excercise 4 writing (special case)
-                if a_struct[0] == 'no struct tag':
+                    # handle excercise 4 writing (special case)
+                    if a_struct[0] == 'no struct tag':
 
-                    a_tag = '.watupro-question-choice label'
+                        a_tag = '.watupro-question-choice label'
 
-                    # parse answers
-                    parsed_a.append([answer.get_text().replace('\xa0', ' ').strip() for answer in text.select(a_tag)])
+                        # parse answers
+                        parsed_a.append([answer.get_text().replace('\xa0', ' ').strip() for answer in text.select(a_tag)])
     
     # return parsed content
     return (parsed_q, parsed_a)
@@ -587,8 +597,17 @@ def parse_tests_answers(q_struct, page, ca_sct, ca_fb_sct):
             for num in numbers:
                 num.insert(1, '.')
 
-            # store all of the p, and h4 elements in column in list of lists
-            ca.append([line.get_text().replace('\xa0', ' ').strip() for line in column.select(ca_fb_sct[-1])])
+            if ca_fb_sct[0] == 'dialogue':
+
+                # store all of the p, and h4 elements in column in list of lists
+                ca.append([line.get_text().replace('\xa0', ' ').strip() for line in column.select(ca_fb_sct[-1])])
+            
+            else:
+                
+                for line in column.select(ca_fb_sct[-1]):
+                    
+                    ca.append(line.get_text().replace('\xa0', ' '))
+                
 
     return (ca, ca_fb)
 

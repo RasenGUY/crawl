@@ -70,7 +70,7 @@ headers = [
     ]
 ] 
 
-req = requests.get('https://test-english.com/grammar-points/a2/present-continuous-future-arrangements/', headers=headers[0])
+req = requests.get('https://test-english.com/use-of-english/a2/a2-english-test-1-text-multiple-choice-gaps/', headers=headers[0])
 
 q_page = BeautifulSoup(req.text, 'html.parser')
 
@@ -147,7 +147,7 @@ for key in content.keys():
     # handle passage
     if key == 'passage':
         
-        if content['q_struct'] == 'dialogue':
+        if content['q_struct'] == 'dialogue' and content[key] != None:
             
             counter = 0 
             for question in content[key]:
@@ -162,8 +162,13 @@ for key in content.keys():
                     else:
 
                         print(question)
+                else:
+
+                    print(question)
 
                 counter += 1
+
+            print('\n')
 
         else:
 
@@ -191,41 +196,43 @@ for key in content.keys():
     # handle questions
     elif key == 'questions':
         
-        if content['q_struct'] == 'dialogue': 
-            
-            counter = 0
-            q_counter = 0
-            for p_answer in content[key][-1]:
-            
-                # handle gap options
-                if isinstance(p_answer[counter], list):
+        # write answers of options
+        if content['q_struct'] == 'dialogue':
 
-                    print('{}. __________'.format(q_counter+1) + '\n')
-                    
-                    for p_as in p_answer[counter][q_counter]:
+            if content[key][-1] != None: 
+            
+                d_counter = 0
+                a_counter = 0
+                
+                # loop through dialogue
+                for dialogue in content[key][-1]:
 
-                        q_counter += 1
+                    # loop through p_answers
+                    for p_as in dialogue:
+
+                        a_counter += 1
+                        
+                        print(str(a_counter) + '. ' + '_'*10 + '\n')
 
                         for i in range(len(p_as)):
                             
-                            p_a = chr(ord('a') + i) + '. ' + p_as[i]
+                            p_a = '\t' + chr(ord('a') + i) + '.' + p_as[i]
                             
                             print(p_a)
                         
-                    counter  += 1
+                        print('\n')
+                        
+                    d_counter += 1
+            else:
+
+                pass  
 
 
-                # handle gap option
-                else:
-
-                    print('{}. __________'.format(counter+1))
-                    counter += 1
-
-        else:
+        elif content['q_struct'] == 'form':
         
             counter = 0
             for question in content[key][0]:
-            
+        
                 print(str(counter+1)+ '. ' + question, end='\n')
                 
                 # if questions multiple choice 
@@ -243,13 +250,52 @@ for key in content.keys():
                         else:
 
                             print(p_as)
-                    
-                    print('\n')
+                else:
+
+                    pass
             
-                print('\n')
+            print('\n')
+            
+            counter+= 1
+
+        # handle texts                      
+        elif content['q_struct'] == 'text' or content['q_struct'] == 'special': 
+            
+            for paragraph in content[key][0]:
+
+                print(paragraph)
+            
+            print('\n')
+
+            if len(content[key][-1]) > 0:
                 
-                counter+= 1
-        
+                a_counter = 0
+                for p_as in content[key][-1]:
+
+                    if isinstance(p_as, list):
+
+                        for i in range(len(p_as)):
+
+                            p_a = p_as[i]
+                            
+                            print(str(a_counter+1) + '. ' + '_'*10)
+
+                            for j in range(len(p_a)):
+                                
+                                print('\t' + chr(ord('a') + j) + '.' + p_a[j])
+                            
+                            print('\n')
+
+                            a_counter += 1
+                    else:
+                        
+                        print('\t' + str(a_counter+1) + '. ' + p_as)
+                        a_counter += 1        
+            else:
+
+                pass
+            
+
     elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
 
         # don't print test title
@@ -281,9 +327,22 @@ for key in content.keys():
         counter = 0
         for c_answer in content[key][0]:
 
-            if content['q_struct'] == 'dialogue':
-                
-                pass
+            if content['q_struct'] == 'dialogue':        
+
+                # print each line in dialogue
+                for line in c_answer:
+
+                    if line[0:2].isdigit():
+                    
+                        print('{}.{}'.format(line[0:2], line[2:len(line)]))
+                    
+                    elif line[0].isdigit():
+                        
+                        print('{}.{}'.format(line[0], line[1:len(line)]))
+                    
+                    else:
+
+                        print(line)
 
             # store single answers 
             elif content['ca_fb_sct'] == 'ca_multiple_bullets_wf':
@@ -356,6 +415,21 @@ for key in content.keys():
 
                 counter += 1
             
+            elif content['ca_fb_sct'] == 'ca_single':
+
+                p_a = c_answer
+
+                print(p_a)
+
+            elif content['ca_fb_sct'] == 'ca_single_bullets':
+
+                for num in range(len(content[key][0])):
+                    
+                    print('Question {}.'.format(num+1))
+                    
+                    for answer in content[key][0][num]:
+
+                        print('\t' + answer + '\n')
             
     elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
 
@@ -369,6 +443,37 @@ for key in content.keys():
 
             print(key + ': ' + content[key], end='\n')
             print('\n')
+    else:
+        pass
+
+print('\n'*2)
+print("Explanations for the test: {}".format(content['test_title']))
+print('\n')
+
+expl = False
+
+for key in content.keys():
+    
+    if key == 'expl':
+
+        expl = True
+
+if expl == True:
+
+    for line in content['expl']:
+
+        
+        if isinstance(line, list):
+            
+            print(line[0], line[-1], '\n') 
+        
+        else:
+            
+            print(line)
+
+else: 
+
+    print("No Explanations")
 
 
 print(content)
