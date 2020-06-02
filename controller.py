@@ -103,6 +103,8 @@ class Crawler:
                 except requests.exceptions.RequestException as err:
                     
                     print('Oops Something went wrong', err)
+                    timeout = (15, 15)
+                    continue
 
                 soup = BeautifulSoup(req.text, parser)
 

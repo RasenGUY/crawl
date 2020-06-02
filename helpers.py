@@ -1,7 +1,7 @@
 import re
 from bs4 import BeautifulSoup, Tag, NavigableString
 import os
-
+import requests 
 def feed_crawler_links(file):
     '''
     helper function which loads already surfed llinks to the crawler returns a list of of links
@@ -659,10 +659,7 @@ def write_questions(f_path, f, content):
     #     test.close()
 
     # write to file
-    f_path = f_path + f
-    
-    # create file
-    with open(f_path, 'a+') as test:
+    with open(f_path + f, 'a+') as test:
 
         test.write('\n'*2)
         test.write("Test: {}".format(content['test_title']))
@@ -853,10 +850,7 @@ def write_answers(f_path, f, content):
     #     test.close()
     
     # write to file
-    f_path = f_path + f
-
-    # create file
-    with open(f_path, 'a+') as test:
+    with open(f_path + f, 'a+') as test:
 
         # write parsed answers
         test.write('\n'*2)
@@ -1000,12 +994,12 @@ def write_explanations(f_path, f, content):
     # create file
     # with open(f_path + f, 'x') as test:
     #     test.close()
-    
-    # write to file 
-    f_path = f_path + f
 
-    # create file    
-    with open(f_path, 'a+') as test:
+    headers = {'User-Agent': 'Mozilla/75.0'} 
+    
+     
+    # write to file 
+    with open(f_path + f, 'a+') as test:
 
         test.write('\n'*2)
         test.write("Explanations for the test: {}".format(content['test_title']))
@@ -1026,8 +1020,63 @@ def write_explanations(f_path, f, content):
                 
                 if isinstance(line, list):
                     
-                    test.write(line[0], line[-1], '\n') 
-                
+                    # write links 
+                    test.write('\t\t ---------- Image {} GOES HERE --------- \n'.format(line[-1])) 
+                    
+                    # req variables
+                    req = None
+                    timeout = (None, None)
+
+                    # create link
+                    pattern = re.compile(r'(?<=.)(-(\d{1,4}x\d{1,4})(?=\.))')
+                    match = pattern.search(line[0])
+                    d_link = line[0]
+
+                    if match != None:
+                        
+                        d_link = d_link.replace(match.group(), '').replace('/website18', '')   
+
+                    while req == None:    
+                        
+                        try:
+                            req = requests.get(line[0], headers=headers, timeout=timeout)
+                            req.raise_for_status()
+                        
+                        except requests.exceptions.HTTPError as errh:
+
+                            print('HTTP Error: ', errh)
+                            timeout = (15, 15)
+                            continue
+
+                        except requests.exceptions.ConnectionError as errc:
+
+                            print('Connection Error: ', errc)
+                            timeout = (15, 15)
+                            continue
+                            
+                        except requests.exceptions.Timeout as errt:
+
+                            print('Timeout Error: ', errt)
+                            timeout = (15, 15)
+                            continue
+
+                        except requests.exceptions.RequestException as err:
+
+                            print('Oops Something went wrong: ', err)
+                            timeout = (15, 15)
+                            continue
+                        
+                        # create image name
+                        img_name = line[-1].replace('-', '').replace(',', '').replace(' ', '-')
+
+                        # write image
+                        with open(f_path + img_name + '.png', 'wb') as img:
+                            
+
+                            print('Downlaoding image: {}'.format(d_link))
+
+                            img.write(req.content)
+                        
                 else:
                     
                     test.write(line)

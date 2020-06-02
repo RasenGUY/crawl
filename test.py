@@ -8,7 +8,6 @@ from schemes import *
 from urllib import parse
 import os
 
-
 # Links to extract
     # test with textbox 
         # https://test-english.com/grammar-points/b2/generic-pronouns/3/
@@ -68,13 +67,45 @@ import os
 headers = [
     {"User-Agent": "Mozilla/75.0"}, 
     [
-        {"User-Agent": "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}
+        {"User-Agent": "Mozilla/75.0 (X11; Fedora; Linux x86_64; rv:75.0) Gecko/20100101 Firefox/75.0 Chrome/73.0.3683.103", "X-Requested-With": "XMLHttpRequest"}, {"action": "watupro_submit", "quiz_id": "258"}
     ]
 ] 
-link = 'https://test-english.com/grammar-points/a2/however-although-time-connectors/'
-p_link = parse.urlparse(link)
 
+# 'https://test-english.com/staging01/wp-content/uploads/Verb-tenses-summary-B1-B2.png'
+# https://test-english.com/staging01/wp-content/uploads/Questions-word-order.new_.png
+link = 'https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/'
+p_link = parse.urlparse(link)
 req = requests.get(link, headers=headers[0])
+
+# soup = BeautifulSoup(req.text, 'html.parser')
+
+# imgs = soup.select('#explanation img')
+# pattern = re.compile(r'(?<=.)(-(\d{1,4}x\d{1,4})(?=\.))')
+
+# if len(imgs) != 0:
+
+#     counter = 0
+#     for img in imgs:
+        
+#         img_link = img['data-wpfc-original-src']
+#         print(img_link)
+#         match = pattern.search(img_link)
+        
+#         if match != None:
+        
+#             img_link = img_link.replace(match.group(), '').replace('/website18', '')
+        
+        
+#         req = requests.get(img_link, headers=headers[0])
+
+        
+#         with open('img-'+ str(counter+1) + '.png', 'wb') as img:
+            
+#             print('saving image: {}'.format(img_link))
+#             img.write(req.content)
+        
+#         counter += 1 
+
 
 q_page = BeautifulSoup(req.text, 'html.parser')
 
@@ -148,7 +179,7 @@ f_ex = '/' + content['test_title'].replace('-', '').replace(',', '').replace(' '
 f_path = os.path.dirname('/home/rasguy92/Downloads/' + 'tests' + str(p_link.path))
 
 if os.path.exists(f_path) == False:
-    os.makedirs(f_path, mode=777)
+    os.makedirs(f_path)
 
 
 write_questions(f_path, f_qs, content)
