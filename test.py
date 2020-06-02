@@ -73,9 +73,10 @@ headers = [
 
 # 'https://test-english.com/staging01/wp-content/uploads/Verb-tenses-summary-B1-B2.png'
 # https://test-english.com/staging01/wp-content/uploads/Questions-word-order.new_.png
-link = 'https://test-english.com/writing/b1-b2/for-against-essay-argumentative-writing/'
+link = 'https://test-english.com/level-test/'
 p_link = parse.urlparse(link)
 req = requests.get(link, headers=headers[0])
+
 
 # soup = BeautifulSoup(req.text, 'html.parser')
 
@@ -105,6 +106,7 @@ req = requests.get(link, headers=headers[0])
 #             img.write(req.content)
         
 #         counter += 1 
+
 
 
 q_page = BeautifulSoup(req.text, 'html.parser')

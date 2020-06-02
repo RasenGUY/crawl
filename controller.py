@@ -234,9 +234,9 @@ class Crawler:
                 # get test type 
                 link_p = parse.urlparse(req.url).path.strip('/')
                 test_type = link_p.split('/')[0] 
-
-                # if test_type == 'level-test':
-                #     link_p = 'level-test/'
+        
+                if test_type == 'level-test':
+                    link_p = 'level-test/'
 
                 # if test-category is level-test 
                 if test_type == 'listening':

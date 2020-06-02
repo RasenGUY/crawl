@@ -1,7 +1,10 @@
+# import modules
 import re
 from bs4 import BeautifulSoup, Tag, NavigableString
 import os
-import requests 
+import requests
+
+
 def feed_crawler_links(file):
     '''
     helper function which loads already surfed llinks to the crawler returns a list of of links
@@ -636,14 +639,31 @@ def parse_tests_expls(page, selector):
         # handle lists 
         if element.name == 'ul':
             item = element.get_text().replace('\xa0', ' ').replace('\n', '\n\t')
-            parsed_expls.append(item[:len(item)-2])
+            parsed_expls.append(item[:len(item)-2] + '\n')
             continue 
-
+        
+        
+        # do not store empty strings or strings that have the weird encoding 
         if element.get_text() == '' or element.get_text() == '\xa0':
+            
             pass
         
+        
+        # handle h2, h4, p and 
         else:
-            parsed_expls.append(element.get_text().replace('\xa0', ' '))
+
+            el = element.get_text().replace('\xa0', ' ')
+            
+            # check if element contains an '\n'
+            if element.get_text()[0] != '\n':
+                
+                el = '\n' + el 
+            
+            if element.get_text()[-1] != '\n':
+                
+                el += '\n'
+
+            parsed_expls.append(el)
 
            
     return parsed_expls
@@ -749,8 +769,8 @@ def write_questions(f_path, f, content):
                             d_counter += 1
                     else:
 
-                        pass  
-
+                        pass
+                    
 
                 elif content['q_struct'] == 'form':
                 
@@ -774,13 +794,16 @@ def write_questions(f_path, f, content):
                                 else:
 
                                     test.write(p_as)
+                            
                         else:
 
                             pass
                     
+                        test.write('\n')
+                        counter+= 1
+                    
                     test.write('\n')
                     
-                    counter+= 1
 
                 # handle texts                      
                 elif content['q_struct'] == 'text' or content['q_struct'] == 'special': 
@@ -794,6 +817,7 @@ def write_questions(f_path, f, content):
                     if len(content[key][-1]) > 0:
                         
                         a_counter = 0
+
                         for p_as in content[key][-1]:
 
                             if isinstance(p_as, list):
@@ -802,18 +826,17 @@ def write_questions(f_path, f, content):
 
                                     p_a = p_as[i]
                                     
-                                    test.write(str(a_counter+1) + '. ' + '_'*10)
+                                    test.write(str(a_counter+1) + '. ' + '_'*10 + '\n')
 
                                     for j in range(len(p_a)):
                                         
-                                        test.write('\t' + chr(ord('a') + j) + '.' + p_a[j])
+                                        test.write('\t' + chr(ord('a') + j) + '.' + p_a[j] + '\n')
                                     
-                                    test.write('\n')
-
+                                    # test.write('\n')
                                     a_counter += 1
                             else:
                                 
-                                test.write('\t' + str(a_counter+1) + '. ' + p_as)
+                                test.write('\n\t' + str(a_counter+1) + '. ' + p_as)
                                 a_counter += 1        
                     else:
 
@@ -829,9 +852,11 @@ def write_questions(f_path, f, content):
 
                 # print sub title instructions and text_box
                 elif content[key] != None: 
-
-                    test.write(key + ': ' + content[key] + '\n')
+                    
+                    test.write(key + ': ' + content[key])
                     test.write('\n')
+                
+                test.write('\n'*2)
 
             # pass parsed answers
             else:
@@ -860,27 +885,37 @@ def write_answers(f_path, f, content):
         # loop through keys
         for key in content.keys():
 
+            pattern = re.compile(r'\d{1,3}.')
             if key == 'c_answers':
-                
+
                 counter = 0
                 for c_answer in content[key][0]:
 
                     if content['q_struct'] == 'dialogue':        
+                        
 
                         # print each line in dialogue
                         for line in c_answer:
+                            
+                            match = pattern.search(line)
 
-                            if line[0:2].isdigit():
-                            
-                                test.write('{}.{}'.format(line[0:2], line[2:len(line)]))
-                            
-                            elif line[0].isdigit():
+                            if match != None:
                                 
-                                test.write('{}.{}'.format(line[0], line[1:len(line)]))
-                            
-                            else:
+                                line.replace(line[match.start(): match.end()], match.group() + '.')
+                                test.write('\n' + line)
+                                continue
+                                                        
+                            elif line.rfind('Feedback') >= 0:
 
-                                test.write(line)
+                                test.write('\n' + line)
+                                continue
+                            
+                            test.write('\n' + line)
+                            
+                            test.write('\n')                
+                        
+                        test.write('\n')                
+                        
 
                     # store single answers 
                     elif content['ca_fb_sct'] == 'ca_multiple_bullets_wf':
@@ -899,7 +934,7 @@ def write_answers(f_path, f, content):
 
                                 c_a = c_answer[3:len(c_answer)] 
                             
-                            test.write(str(counter + 1) + '. ' + c_a) 
+                            test.write(str(counter + 1) + '. ' + c_a)
                                     
                         # store single correct answers 
                         else:
@@ -912,14 +947,24 @@ def write_answers(f_path, f, content):
                         # write if feedback is a list
                         if isinstance(content[key][-1][counter], list):
                             
+                            test.write('\n')
+
                             for line in content[key][-1][counter]:
 
-                                test.write('\t' + line)
+                                if line.rfind('Transcription') >= 0:
+                                    test.write('\t' + line + '\n')
+                                    continue
+                                
+                                test.write('\t' + line + '\n'*2)
                         
                         # write feedback is not list   
                         else: 
+                            
+                            test.write('\n')
 
                             test.write('\t' + content[key][-1][counter])
+
+                            test.write('\n')
 
                         test.write('\n')
 
@@ -933,12 +978,14 @@ def write_answers(f_path, f, content):
                             test.write(str(counter+1) + '. ' + c_answer[1:-1])
                         
                         else:
+
                             test.write(str(counter+1) + '. ' + c_answer)
                         
                         if c_answer[-1] != '\n':
                             
                             test.write('\n')
                         
+                        test.write('\n')
                         counter+= 1
                     
                     elif content['ca_fb_sct'] == 'ca_multiple_bullets_wof':
@@ -956,8 +1003,19 @@ def write_answers(f_path, f, content):
                     elif content['ca_fb_sct'] == 'ca_single':
 
                         p_a = c_answer
+                        match = pattern.search(p_a)
 
-                        test.write(p_a)
+                        if p_a.rfind('Feedback') >= 0:
+                            
+                            test.write(p_a + '\n')
+                            continue
+                        
+                        if match != None:
+
+                            test.write('\n' + p_a + '\n')
+                            continue 
+                        
+                        test.write(p_a + '\n')
 
                     elif content['ca_fb_sct'] == 'ca_single_bullets':
 
@@ -967,7 +1025,9 @@ def write_answers(f_path, f, content):
                             
                             for answer in content[key][0][num]:
 
-                                test.write('\t' + answer + '\n')
+                                test.write('\n\t' + answer + '\n')
+                        
+                        counter += 1
                     
             elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
 
@@ -978,9 +1038,12 @@ def write_answers(f_path, f, content):
 
                 # print sub title instructions and text_box
                 elif content[key] != None: 
+                    
 
-                    test.write(key + ': ' + content[key] + '\n')
+                    test.write(key + ': ' + content[key])
                     test.write('\n')
+                
+                test.write('\n'*2)
             else:
                 pass
 
@@ -995,8 +1058,9 @@ def write_explanations(f_path, f, content):
     # with open(f_path + f, 'x') as test:
     #     test.close()
 
-    headers = {'User-Agent': 'Mozilla/75.0'} 
-    
+    headers = {'User-Agent': 'Mozilla/75.0', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', 'Accept-Language': 'en-US,en;q=0.5', 'Accept-Encoding': 'gzip, deflate, br', 'Connection': 'keep-alive'} 
+
+
      
     # write to file 
     with open(f_path + f, 'a+') as test:
@@ -1021,7 +1085,8 @@ def write_explanations(f_path, f, content):
                 if isinstance(line, list):
                     
                     # write links 
-                    test.write('\t\t ---------- Image {} GOES HERE --------- \n'.format(line[-1])) 
+                    test.write(' ---------- Image {} GOES HERE --------- \n'.format(line[-1])) 
+                    test.write(' ---------- link {} --------- \n\n'.format(line[0])) 
                     
                     # req variables
                     req = None
@@ -1034,12 +1099,12 @@ def write_explanations(f_path, f, content):
 
                     if match != None:
                         
-                        d_link = d_link.replace(match.group(), '').replace('/website18', '')   
+                        d_link = d_link.replace(match.group(), '')   
 
                     while req == None:    
                         
                         try:
-                            req = requests.get(line[0], headers=headers, timeout=timeout)
+                            req = requests.get(d_link, headers=headers, timeout=timeout)
                             req.raise_for_status()
                         
                         except requests.exceptions.HTTPError as errh:
@@ -1070,15 +1135,14 @@ def write_explanations(f_path, f, content):
                         img_name = line[-1].replace('-', '').replace(',', '').replace(' ', '-')
 
                         # write image
-                        with open(f_path + img_name + '.png', 'wb') as img:
+                        with open(f_path + '/' + img_name + '.png', 'wb') as img:
                             
-
-                            print('Downlaoding image: {}'.format(d_link))
-
+                            print('Downloading image: {}'.format(d_link))
                             img.write(req.content)
                         
                 else:
                     
+                    # check wheter line contains trailing '\n' 
                     test.write(line)
 
         else: 
