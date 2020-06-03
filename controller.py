@@ -59,6 +59,7 @@ class Crawler:
     def __init__(self, site, ils=False, folder_name=None):
         self.site = site
         self.surfed_ils = set()
+        self.err_links = set()
         
         if ils == False:
             self.ils = set()
@@ -203,7 +204,7 @@ class Crawler:
         # some variables for keeping track of links
         target_nums = 0
         link_nums = 0
-        home = '/home/raguy92/downloads/' 
+        home = '/run/media/rasguy92/SDD/neworld/tests/' 
 
         # loop through links in this case
         for link in self.ils:
@@ -233,7 +234,7 @@ class Crawler:
     
                 # get test type 
                 link_p = parse.urlparse(req.url).path.strip('/')
-                test_type = link_p.split('/')[0] 
+                test_type = link_p.strip('/').split('/')[0] 
         
                 if test_type == 'level-test':
                     link_p = 'level-test/'
@@ -243,6 +244,8 @@ class Crawler:
                     
                     # assign scheme appropriate to test type
                     self.site.tag_scheme = listening_scheme
+                    self.site.tag_scheme['p_url'] = req.url
+
 
                     try:
                         # parse content
@@ -262,13 +265,45 @@ class Crawler:
 
                             if link.get_text() == 'mp3\xa0128kbps':
                                 d_link = 'https:' + link.attrs['data-link']
-
-                        content['audio'] = d_link
+                        
+                        # get audio response
+                        ar = self.get_page(d_link, 'GET', self.site.headers[0])
+                        
+                        # initialize an instant and store parsed info in this instance
+                        pl_test = Listening(content['p_url'], content['test_title'], content)
+                        # pl_test.show_parsed_items()
+                        
+                        
+                        # create folder paths 
+                        f_path = pl_test.create_folder_path(link_p, home)
+                        
+                        # create folder path 
+                        f_path = pl_test.create_folder_path(link_p, home)
                     
+                        
+                        # create filenames                     
+                        f_names = pl_test.create_file_name(f_path, p_nums)
+                        
+                        # write files 
+                        if p_url not in self.surfed_ils:
+                            
+                            # write explanations
+                            pl_test.write_parsed_explanantions(f_path, f_names[-1])
+                        
+                        # write questions
+                        pl_test.write_parsed_questions_answers(f_path, f_names[0], f_names[1])
+                        
+                        self.surfed_ils.add(req.url)
+                        self.surfed_ils.add(p_url)
+
+                        # download audio
+                        pl_test.write_audio(f_path, ar)
+
                     except Exception as e:
 
                         with open('logs.txt', 'a+') as logs:
                             
+                            logs.write("\n\nSomething went wrong writing content\n")
                             logs.write(p_url + '\n')
                             logs.write('\n')
                             logs.write('\t\t' + str(e) + '\n')
@@ -276,28 +311,50 @@ class Crawler:
 
                         print('Found Error Here')
                         print("Continuing")
-                    
-                    # initialize an instant and store parsed info in this instance
-                    p_test = Listening(p_url, content['test_title'], content)
-                    p_test.show_parsed_items()
-                    
-                    # create folder path 
-                    f_path = p_test.create_folder_path(link_p, home)
-                    print(f_path)
+
+                        self.err_links.add(req.url)
+                        with open('err_links.text', 'a+') as er_links:
+                            er_links.write(req.url)
+
+                        continue 
 
                 else: 
 
                     # assign scheme
                     self.site.tag_scheme = general_scheme
+                    self.site.tag_scheme['p_url'] = req.url
  
                     try:
                         # parse content
-                        content = parse_tests_content(q_page, ca_page, self.site.tag_scheme)
+                        content = parse_tests_content(q_page, ca_page, self.site.tag_scheme) 
+
+                        # initialize content instance
+                        p_test = Content(p_url, content['test_title'], content)
+                        # p_test.show_parsed_items()
+
+                        # create folder path 
+                        f_path = p_test.create_folder_path(link_p, home)
+                        
+                        # create filenames                     
+                        f_names = p_test.create_file_name(f_path, p_nums)
                     
+                        # write files 
+                        if p_url not in self.surfed_ils:
+                            
+                            # write explanations
+                            p_test.write_parsed_explanantions(f_path, f_names[-1])
+                        
+                        # write questions
+                        p_test.write_parsed_questions_answers(f_path, f_names[0], f_names[1])
+                        
+                        self.surfed_ils.add(req.url)
+                        self.surfed_ils.add(p_url)
+
                     except Exception as e:
 
                         with open('logs.txt', 'a+') as logs:
                             
+                            logs.write("\n\nSomething went wrong writing content\n")
                             logs.write(p_url + '\n')
                             logs.write('\n')
                             logs.write('\t\t' + str(e) + '\n')
@@ -306,14 +363,11 @@ class Crawler:
                         print('Found Error Here')
                         print("Continuing")
 
-                    # initialize content instance
-                    p_test = Content(p_url, content['test_title'], content)
-                    p_test.show_parsed_items()
-
-                    # create folder path 
-                    f_path = p_test.create_folder_path(link_p, home)
-                    print(f_path)
-                
+                        self.err_links.add(req.url)
+                        with open('err_links.text', 'a+') as er_links:
+                            er_links.write(req.url)
+                        
+                        continue 
             else:
 
                 link_nums += 1
@@ -326,6 +380,8 @@ class Crawler:
         with open('logs.txt', 'a+') as logs:
             
             logs.write('Total num of links surfed {}, Total num of targets found {}'.format(link_nums, target_nums))
+        
+        
 
                 
 

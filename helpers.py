@@ -843,7 +843,7 @@ def write_questions(f_path, f, content):
                         pass
                     
 
-            elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+            elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words' or key == 'p_url':
 
                 # don't print test title
                 if key == 'test_title':
@@ -1029,7 +1029,7 @@ def write_answers(f_path, f, content):
                         
                         counter += 1
                     
-            elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words':
+            elif key == 'sub_title' or key == 'test_title' or key == 'instructions' or key == 'words' or key == 'p_url':
 
                 # don't print test title
                 if key == 'test_title':

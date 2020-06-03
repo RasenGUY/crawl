@@ -17,6 +17,7 @@ general_scheme = {
 
     'q_struct' : None,
     'ca_fb_sct' : None,
+    'p_url' : None,
     'test_title' : 'header h1', # test-title
     'sub_title' : '#exercises h3', # test subtitle 
     'instructions' : '#exercises h5', #instructions for the test

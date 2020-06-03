@@ -81,10 +81,10 @@ def parse_tests_content(q_page, ca_page, scheme):
     ca_sct = find_ca_struct(q_struct, ca_page)
     ca_fb_sct = find_ca_feedback_struct(ca_sct, ca_page)
 
-    print(q_struct)
-    print(a_struct)
-    print(ca_sct)
-    print(ca_fb_sct)
+    # print(q_struct)
+    # print(a_struct)
+    # print(ca_sct)
+    # print(ca_fb_sct)
 
     # parse questions, possible answers and correct answers
     questions = parse_tests_questions(scheme['questions'][0], q_page, q_struct, a_struct)
@@ -186,6 +186,11 @@ def parse_tests_content(q_page, ca_page, scheme):
         elif key == 'ca_fb_sct':
 
             content[key] = ca_fb_sct[0]
+        
+        # get p_url
+        elif key == 'p_url':
+
+            content[key] = scheme[key]
         
         # parse content according to scheme 
         else:

@@ -73,6 +73,8 @@ headers = [
 
 # 'https://test-english.com/staging01/wp-content/uploads/Verb-tenses-summary-B1-B2.png'
 # https://test-english.com/staging01/wp-content/uploads/Questions-word-order.new_.png
+
+
 link = 'https://test-english.com/level-test/'
 p_link = parse.urlparse(link)
 req = requests.get(link, headers=headers[0])
@@ -146,32 +148,6 @@ content = parse_tests_content(q_page, ca_page, general_scheme)
 
 # print(d_link)
 
-
-# print(len(page.select('.quiz-form .watu-question')))
-# parse answers
-
-# print()
-# print(content['title'])
-# print(content['sub_title'])
-# print()
-# for i in range(len(content['content']['questions'])):
-#     q_num = content['content']['questions'][i][0]
-#     q_body = content['content']['questions'][i][-1]
-
-#     print('{} {}'.format(q_num, q_body))
-    
-#     for j in range(len(content['content']['options'][i])):
-
-#         o_num = content['content']['options'][i][j][0]
-#         o_body = content['content']['options'][i][j][-1]
-        
-#         print('\t {} {}'.format(o_num, o_body))
-    
-#     print()
-# ils = feed_crawler_links('eng_test_links.txt')
-# ins = find_pattern_inst(re.compile(rf'https://test-english.com/grammar-points/a1/present-simple-forms-of-to-be/4.*'), ils)
-# print(ins)
-
 # create filename
 f_qs = '/' + content['test_title'].replace('-', '').replace(',', '').replace(' ', '-') + '-QUESTIONS' + '.txt'
 f_as = '/' + content['test_title'].replace('-', '').replace(',', '').replace(' ', '-') + '-ANSWERS' + '.txt'
@@ -180,10 +156,7 @@ f_ex = '/' + content['test_title'].replace('-', '').replace(',', '').replace(' '
 # get folder path 
 f_path = os.path.dirname('/home/rasguy92/Downloads/' + 'tests' + str(p_link.path))
 
-if os.path.exists(f_path) == False:
-    os.makedirs(f_path)
 
-
-write_questions(f_path, f_qs, content)
-write_answers(f_path, f_as, content)
-write_explanations(f_path, f_ex, content)
+# write_questions(f_path, f_qs, content)
+# write_answers(f_path, f_as, content)
+# write_explanations(f_path, f_ex, content)
