@@ -1132,7 +1132,21 @@ def write_explanations(f_path, f, content):
                             continue
                         
                         # create image name
-                        img_name = line[-1].replace('-', '').replace(',', '').replace(' ', '-')
+                        img_name = '' 
+                        
+                        for letter in line[-1]:
+
+                            if ord(letter) >= 65 and ord(letter) <= 90:
+
+                                img_name += letter
+
+                            elif ord(letter) >= 97 and ord(letter) <= 122:
+
+                                img_name += letter
+                            
+                            else: 
+
+                                img_name += '-'
 
                         # write image
                         with open(f_path + '/' + img_name + '.png', 'wb') as img:

@@ -365,7 +365,10 @@ class Crawler:
 
                         self.err_links.add(req.url)
                         with open('err_links.text', 'a+') as er_links:
+                            
+                            er_links.write('\n')
                             er_links.write(req.url)
+                            er_links.write('\n')
                         
                         continue 
             else:

@@ -91,13 +91,16 @@ class Content:
         
         Utility function for storing data into text files
         '''
+
+        print('\n')
         print("Downloading Q & A  ...... ...... ....... ")
-        print()
+        print('\n')
         # write questions and answers
         write_questions(f_path, f_qs, self.body)
         print('-Questions downloaded successfully-')
         write_answers(f_path, f_as, self.body)
         print('-Answers downloaded successfully-')
+        print('\n')
 
 
     
@@ -106,11 +109,12 @@ class Content:
 
         Class utility function for storing text explanations in text files
         '''
-
+        print('\n')
         print("Downloading Explanations  ...... ...... ....... ")
         # write explanations
         write_explanations(f_path, f_ex, self.body)
         print('-Explanations downloaded successfully-')
+        print('\n')
 
         
 
@@ -135,8 +139,9 @@ class Listening(Content):
         '''
 
         with open(a_path + '/AUDIO' + '.mp3', 'wb') as audio:
-            print()
+            print('\n')
             print('Downloading audio from {}'.format(self.body['p_url']))
+            print('\n')
             
             audio.write(audio_response.content)
 
