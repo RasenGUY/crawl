@@ -1,0 +1,50 @@
+Total num of links surfed 28, Total num of targets found 4Total num of links surfed 31, Total num of targets found 1
+
+Something went wrong writing content
+https://test-english.com/listening/b2/life-without-cell-phone/
+
+		'NoneType' object has no attribute 'start'
+
+
+
+Something went wrong writing content
+https://test-english.com/listening/a2/london-sightseeing/
+
+		list index out of range
+
+
+
+Something went wrong writing content
+https://test-english.com/listening/b1-b2/interview-jonathan-franzen/
+
+		'NoneType' object has no attribute 'start'
+
+
+
+Something went wrong writing content
+https://test-english.com/listening/a2/london-sightseeing/
+
+		list index out of range
+
+Total num of links surfed 36, Total num of targets found 1
+
+Something went wrong writing content
+https://test-english.com/listening/b2/life-without-cell-phone/
+
+		'NoneType' object has no attribute 'start'
+
+
+
+Something went wrong writing content
+https://test-english.com/listening/b1-b2/interview-jonathan-franzen/
+
+		'NoneType' object has no attribute 'start'
+
+
+
+Something went wrong writing content
+https://test-english.com/listening/a2/london-sightseeing/
+
+		list index out of range
+
+Total num of links surfed 720, Total num of targets found 14

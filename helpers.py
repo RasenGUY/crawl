@@ -17,7 +17,7 @@ def feed_crawler_links(file):
         for link in lines:
             link_list.append(link.rstrip())
     
-    return link_list
+    return set(link_list)
 
 def find_pattern_inst(pattern, list):
     '''
@@ -83,7 +83,7 @@ def find_q_struct(selector, page):
             q_tag = '.question-content p'
 
     
-    if len(page.find_all(string=re.compile(r'Dialogue \d+'))) > 0:
+    if len(page.find_all(string=re.compile(r'Dialogue \d+'))) >  0 or len(page.find_all(string=re.compile(r'Conversation \d+'))) > 0:
 
         q_struct = 'dialogue'
         q_tag = '.question-content'
@@ -355,12 +355,28 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
                     
             else:
                 
-                # parse questions 
-                if question.select(q_struct[-1])[0].get_text().rfind('\xa0') != -1:
+                if question.select_one(q_struct[-1]) != None:
+
+                        
+                    # parse questions 
+                    if question.select(q_struct[-1])[0].get_text().rfind('\xa0') != -1:
+                    
+                        parsed_q.append(question.select(q_struct[-1])[0].get_text().replace('\xa0', ' ').strip())
+
+                    else:
+                        parsed_q.append(question.select(q_struct[-1])[0].get_text().strip())
                 
-                    parsed_q.append(question.select(q_struct[-1])[0].get_text().replace('\xa0', ' ').strip())
                 else:
-                    parsed_q.append(question.select(q_struct[-1])[0].get_text().strip())
+
+                    # parse questions
+                    n_struct = '.question-content'
+                    if question.select(n_struct)[0].get_text().rfind('\xa0') != -1:
+                    
+                        parsed_q.append(question.select(n_struct)[0].get_text().replace('\xa0', ' ').strip())
+
+                    else:
+
+                        parsed_q.append(question.select(n_struct)[0].get_text().strip())
 
                 # --------------- parse form answers -------------
             
@@ -397,12 +413,20 @@ def parse_tests_questions(g_quest_sel, page, q_struct, a_struct):
                     
                     # remove example text if there is any
                     if num_box.get_text() == '0':
+
+                        if len(text.select('.textGap')) > 0:
+                            
+                            num_box.insert(1, ' ' + '_'*2 + text.select('.textGap')[0].get_text() + '_'*2)
+
+                            text.select('.textGap')[0].clear()
+
+                            continue
                         
-                        num_box.insert(1, ' ' + '_'*2 + text.select('.textGap')[0].get_text() + '_'*2)
+                        else:
 
-                        text.select('.textGap')[0].clear()
-
-                        continue
+                            num_box.insert(1, ' ' + "(EXAMPLE) ->")
+                            
+                            continue
 
                     else:
 
@@ -567,9 +591,13 @@ def parse_tests_answers(q_struct, page, ca_sct, ca_fb_sct):
 
                 ca.append([line.get_text().replace('\xa0', ' ') for line in column.select(ca_fb_sel)])
             
+            elif len(column.select(ca_fb_sel)) == 1:
+
+                ca.append(column.select(ca_fb_sel)[0].get_text().replace('\xa0', ' '))
+            
             else:
                 
-                ca.append(column.select(ca_fb_sel)[0].get_text().replace('\xa0', ' '))
+                ca.append('No correct answer, Check feedback')
             
             
             # store with feedback only for ca_multiple_bullets_wf 
@@ -590,8 +618,14 @@ def parse_tests_answers(q_struct, page, ca_sct, ca_fb_sct):
                 
                 # store feedback as is if tag is just .watupro-main-feedback  
                 else:
+                    
+                    if column.select_one(ca_fb_sct[-1][0]) != None:
+                        
+                        ca_fb.append(column.select_one(ca_fb_sct[-1][0]).get_text().replace('\xa0', ' ').strip(' '))
+                    
+                    else:
 
-                    ca_fb.append(column.select(ca_fb_sct[-1][0])[0].get_text().replace('\xa0', ' ').strip(' '))
+                        ca_fb.append('No Feedback for this question')
 
         # store correct answers with dialogue struct
         elif ca_fb_sct[0] == 'ca_dialogue' or ca_fb_sct[0] == 'ca_single':
@@ -973,19 +1007,39 @@ def write_answers(f_path, f, content):
                 
                     elif content['ca_fb_sct'] == 'ca_multiple_normal':
                         
-                        if c_answer[0:1] == '\n':
+                        if isinstance(c_answer, list): 
+                            
+                            for line in c_answer:
 
-                            test.write(str(counter+1) + '. ' + c_answer[1:-1])
-                        
+                                if line[0] == '\n':
+
+                                    test.write(str(counter+1) + '. ' + line[1:-1])
+                                
+                                else:
+
+                                    test.write(str(counter+1) + '. ' + line)
+                                
+                                if line[-1] != '\n':
+                                    
+                                    test.write('\n')
+
+
                         else:
-
-                            test.write(str(counter+1) + '. ' + c_answer)
                         
-                        if c_answer[-1] != '\n':
+                            if  c_answer[0] == '\n':
+
+                                test.write(str(counter+1) + '. ' + c_answer[1:-1])
+                            
+                            else:
+
+                                test.write(str(counter+1) + '. ' + c_answer)
+                            
+                            if c_answer[-1] != '\n':
+                                
+                                test.write('\n')
                             
                             test.write('\n')
-                        
-                        test.write('\n')
+                            
                         counter+= 1
                     
                     elif content['ca_fb_sct'] == 'ca_multiple_bullets_wof':
@@ -1150,8 +1204,9 @@ def write_explanations(f_path, f, content):
 
                         # write image
                         with open(f_path + '/' + img_name + '.png', 'wb') as img:
-                            
+                            print('\n')
                             print('Downloading image: {}'.format(d_link))
+                            print('\n')
                             img.write(req.content)
                         
                 else:

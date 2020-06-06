@@ -56,7 +56,7 @@ class Crawler:
 
     Utility for cralwling and extracting information from target websites 
     """
-    def __init__(self, site, ils=False, folder_name=None):
+    def __init__(self, site, ils=False, links_file=None):
         self.site = site
         self.surfed_ils = set()
         self.err_links = set()
@@ -64,7 +64,7 @@ class Crawler:
         if ils == False:
             self.ils = set()
         else: 
-            self.ils = feed_crawler_links(folder_name)
+            self.ils = feed_crawler_links(links_file)
 
 
     def get_page(self, url, method, headers, return_req_object=False, parser='html.parser', payload={}):
@@ -200,11 +200,11 @@ class Crawler:
             return None
        
                
-    def parse_tests_site(self):
+    def parse_tests_site(self, home):
         # some variables for keeping track of links
         target_nums = 0
-        link_nums = 0
-        home = '/run/media/rasguy92/SDD/neworld/tests/' 
+        link_nums = 0 
+        # home = '/home/rasguy92/Downloads/tests/'
 
         # loop through links in this case
         for link in self.ils:
@@ -213,7 +213,7 @@ class Crawler:
             target = self.check_if_target(link, pattern=re.compile(rf'{link}.*'), look_for_inst=True)
             print("-"*100)
 
-            if target != None:
+            if target != None and target[0] not in self.surfed_ils:
 
                 # target url and num of instances
                 p_url = target[0]
@@ -265,14 +265,14 @@ class Crawler:
 
                             if link.get_text() == 'mp3\xa0128kbps':
                                 d_link = 'https:' + link.attrs['data-link']
+                                break
                         
                         # get audio response
-                        ar = self.get_page(d_link, 'GET', self.site.headers[0])
-                        
+                        soup, ar = self.get_page(d_link, 'GET', self.site.headers[0], return_req_object=True)
+
                         # initialize an instant and store parsed info in this instance
                         pl_test = Listening(content['p_url'], content['test_title'], content)
                         # pl_test.show_parsed_items()
-                        
                         
                         # create folder paths 
                         f_path = pl_test.create_folder_path(link_p, home)
@@ -280,12 +280,11 @@ class Crawler:
                         # create folder path 
                         f_path = pl_test.create_folder_path(link_p, home)
                     
-                        
                         # create filenames                     
                         f_names = pl_test.create_file_name(f_path, p_nums)
                         
                         # write files 
-                        if p_url not in self.surfed_ils:
+                        if os.path.isfile(f_path + f_names[-1]) == False:
                             
                             # write explanations
                             pl_test.write_parsed_explanantions(f_path, f_names[-1])
@@ -313,10 +312,15 @@ class Crawler:
                         print("Continuing")
 
                         self.err_links.add(req.url)
-                        with open('err_links.text', 'a+') as er_links:
+                        with open('err_links.txt', 'a+') as er_links:
                             er_links.write(req.url)
 
-                        continue 
+                        continue
+
+                    # write surfed link
+                    with open('surfed_l.txt', 'a+') as s_links:
+                        
+                        s_links.write(p_url + '\n')
 
                 else: 
 
@@ -339,9 +343,9 @@ class Crawler:
                         f_names = p_test.create_file_name(f_path, p_nums)
                     
                         # write files 
-                        if p_url not in self.surfed_ils:
+                        if os.path.isfile(f_path + f_names[-1]) == False:
                             
-                            # write explanations
+                            # write explanations if it does not exist
                             p_test.write_parsed_explanantions(f_path, f_names[-1])
                         
                         # write questions
@@ -364,17 +368,29 @@ class Crawler:
                         print("Continuing")
 
                         self.err_links.add(req.url)
-                        with open('err_links.text', 'a+') as er_links:
+                        with open('err_links.txt', 'a+') as er_links:
                             
-                            er_links.write('\n')
-                            er_links.write(req.url)
-                            er_links.write('\n')
+                            er_links.write(req.url + '\n')
                         
-                        continue 
+                        continue
+                    
+                    # write surfed link
+                    with open('surfed_l.txt', 'a+') as s_links:
+                        
+                        s_links.write(p_url + '\n')
             else:
 
                 link_nums += 1
-                print("Target not found")
+                
+                if link in self.surfed_ils:
+                   
+                    print("Link already surfed")
+
+                else:
+                    
+                    print("Target not found")
+
+                    
                 print("Continuing.........")
                 print("Number of links surfed {}".format(link_nums))
         
@@ -412,6 +428,6 @@ if __name__ == "__main__":
 
     # create website and crawler instance
     test = Tests(websites[0][0], websites[0][1], websites[0][2], websites[0][3], websites[0][4], websites[0][5])
-    test_crawler = Crawler(test, ils=True, folder_name='eng_test_links.txt')
-    
-    test_crawler.parse_tests_site()
+    test_crawler = Crawler(test, ils=True, links_file='eng_test_links.txt')
+    test_crawler.surfed_ils = feed_crawler_links('surfed_l.txt')
+    test_crawler.parse_tests_site('/run/media/rasguy92/SDD/neworld/tests/')

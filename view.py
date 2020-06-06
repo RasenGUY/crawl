@@ -46,8 +46,6 @@ class Content:
 
         return f_path 
         
-
-
     def create_file_name(self, f_path ,p_nums):
         '''
 
@@ -94,13 +92,11 @@ class Content:
 
         print('\n')
         print("Downloading Q & A  ...... ...... ....... ")
-        print('\n')
         # write questions and answers
         write_questions(f_path, f_qs, self.body)
         print('-Questions downloaded successfully-')
         write_answers(f_path, f_as, self.body)
         print('-Answers downloaded successfully-')
-        print('\n')
 
 
     
@@ -114,7 +110,6 @@ class Content:
         # write explanations
         write_explanations(f_path, f_ex, self.body)
         print('-Explanations downloaded successfully-')
-        print('\n')
 
         
 
@@ -135,13 +130,13 @@ class Listening(Content):
     def write_audio(self, a_path, audio_response):
         '''
 
-        utility function for retrieving audio
+        Class utility function for retrieving audio
         '''
 
         with open(a_path + '/AUDIO' + '.mp3', 'wb') as audio:
+            
             print('\n')
             print('Downloading audio from {}'.format(self.body['p_url']))
-            print('\n')
             
             audio.write(audio_response.content)
 

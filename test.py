@@ -75,7 +75,7 @@ headers = [
 # https://test-english.com/staging01/wp-content/uploads/Questions-word-order.new_.png
 
 
-link = 'https://test-english.com/level-test/'
+link = 'https://test-english.com/grammar-points/b1-b2/position-of-adverbs/3/'
 p_link = parse.urlparse(link)
 req = requests.get(link, headers=headers[0])
 
@@ -127,7 +127,8 @@ ca_page = BeautifulSoup(req.text, 'lxml')
 
 content = parse_tests_content(q_page, ca_page, general_scheme)
 
-# print(content['passage'])
+
+# # print(content['passage'])
 # post_link = 'https://www.easymp3converter.com/models/convertProcess.php'
 # audio_link = get_audio_link(q_page, listening_scheme)
 
@@ -147,6 +148,10 @@ content = parse_tests_content(q_page, ca_page, general_scheme)
 #         d_link = 'https:' + link.attrs['data-link']
 
 # print(d_link)
+# ar = requests.get(d_link, headers=hdrs)
+# with open('audio.mp3', 'wb') as audio:
+
+#     audio.write(ar.content)
 
 # create filename
 f_qs = '/' + content['test_title'].replace('-', '').replace(',', '').replace(' ', '-') + '-QUESTIONS' + '.txt'
@@ -156,7 +161,10 @@ f_ex = '/' + content['test_title'].replace('-', '').replace(',', '').replace(' '
 # get folder path 
 f_path = os.path.dirname('/home/rasguy92/Downloads/' + 'tests' + str(p_link.path))
 
+print(content)
+if os.path.exists(f_path) == False:
+    os.makedirs(f_path)
 
-# write_questions(f_path, f_qs, content)
-# write_answers(f_path, f_as, content)
-# write_explanations(f_path, f_ex, content)
+write_questions(f_path, f_qs, content)
+write_answers(f_path, f_as, content)
+write_explanations(f_path, f_ex, content)

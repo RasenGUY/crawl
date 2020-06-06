@@ -1,20 +1,3 @@
-DOM structure of the explanation page
-
-Highest to lowest
-parent-> #explanation
-
-title -> h2
-instructions -> h5
-p_title -> h3 
-p_title -> h4
-paragraph -> p
-lists -> [ul]
-media -> img
-
-
-text markup -> [strong, span.roundNumber, i, span, em]
-
-
 Links:
 https://test-english.com/grammar-points/a2/however-although-time-connectors/
 https://test-english.com/grammar-points/a2/infinitives-and-gerunds/3/

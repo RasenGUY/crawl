@@ -41,12 +41,20 @@ def get_passage(page, scheme):
                 
                 # create new bs element  
                 n_element = str_tag.replace(str_tag[match.start():match.end()], '</' + str(element.name) + '>')
-                n_soup = BeautifulSoup(n_element, 'html.parser').p
+                n_soup = BeautifulSoup(n_element, 'html.parser').find(element.name)
                 
                 # append altered text of element to passage
                 passage.append(n_soup.get_text())
-                element = element.next_sibling
-                continue
+                
+                if element.next_sibling != None:
+                    
+                    element = element.next_sibling
+
+                    continue
+                
+                else:
+
+                    break
             
             if element.get_text() == '\xa0' or element.get_text() == '' or element.get_text() == '\n': 
                 pass
@@ -55,9 +63,9 @@ def get_passage(page, scheme):
                 
                 passage.append(element.get_text().replace('\xa0', ' ').strip())
                 
-        
-        if element.next_sibling.name == 'div':
+        if element.next_sibling.name == 'div' or element.next_sibling == None:
             break
+
         else: 
             element = element.next_sibling        
     
@@ -81,10 +89,10 @@ def parse_tests_content(q_page, ca_page, scheme):
     ca_sct = find_ca_struct(q_struct, ca_page)
     ca_fb_sct = find_ca_feedback_struct(ca_sct, ca_page)
 
-    # print(q_struct)
-    # print(a_struct)
-    # print(ca_sct)
-    # print(ca_fb_sct)
+    print(q_struct)
+    print(a_struct)
+    print(ca_sct)
+    print(ca_fb_sct)
 
     # parse questions, possible answers and correct answers
     questions = parse_tests_questions(scheme['questions'][0], q_page, q_struct, a_struct)
